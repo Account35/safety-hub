@@ -1,29 +1,40 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageShell } from "@/components/saps/page-shell";
+import {
+  TimeAndGreeting,
+  LocationCard,
+  ActionGrid,
+  StationCard,
+} from "@/components/saps/dashboard-widgets";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Community Safety Tracker — Home" },
+      {
+        name: "description",
+        content:
+          "Browse wanted and missing person cases and report sightings safely. Help SAPS keep your community safer.",
+      },
+      { property: "og:title", content: "Community Safety Tracker" },
+      {
+        property: "og:description",
+        content: "Browse cases and report sightings safely.",
+      },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <PageShell>
+      <div className="space-y-6">
+        <TimeAndGreeting />
+        <LocationCard />
+        <ActionGrid />
+        <StationCard />
+      </div>
+    </PageShell>
   );
 }

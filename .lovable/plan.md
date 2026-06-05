@@ -1,104 +1,103 @@
+## Phase 2: Wanted & Missing Persons Gallery System
 
-# Phase 1: Foundation, Auth & Dashboard
+Build the case discovery system on top of Phase 1 auth/dashboard. Read-only browsing — no reporting (Phase 3), no admin creation (Phase 9), no rewards (Phase 6).
 
-Pragmatic Phase 1 build. Enable Lovable Cloud for real auth + roles, ship Guest and User experiences only, stub Detective/Admin role plumbing for later phases.
+### Scope
 
-## 1. Design system (SAPS branding)
+**In:**
+- `/cases` landing (dual-card decision point)
+- `/cases/wanted` gallery + filters + search
+- `/cases/missing` gallery + filters + search
+- `/cases/wanted/$id` detail view
+- `/cases/missing/$id` detail view
+- Seed data (~50 wanted, ~30 missing) so galleries are populated
+- Accessibility (keyboard nav, alt text, ARIA live regions for filter results)
+- Responsive grid (1/2/3 cols)
 
-Update `src/styles.css` with SAPS tokens (light mode only; dark mode deferred):
+**Deferred (correctly per spec):** report submission, bookmarking, rewards UI, admin CRUD, comments, real-time updates, statistics.
 
-- `--saps-navy: #001F3F` → `--primary`
-- `--saps-gold: #FFD700` → `--accent` / CTA color
-- `--alert-red: #DC2626` → `--destructive`
-- Neutral grays per brief; map to `--background`, `--muted`, `--border`, `--foreground`
-- Spacing scale (4px base), radius `0.5rem` (8px), 44px min touch targets
-- Typography: Inter (body) + Manrope (display) loaded via `<link>` in `__root.tsx` head (never via CSS `@import`)
-- Heading scale: H1 2rem / H2 1.5rem / H3 1.25rem / H4 1.125rem; body 1rem / 1.5 line-height
-- Focus ring: 3px gold on all focusable elements
-- WCAG AA contrast minimums (AAA where reasonable)
+**Phase 1 deferrals respected:** no infinite-scroll preference toggle (Phase 5 settings), no i18n switching (Phase 8), no dark mode.
 
-Shadcn components already present — restyled via tokens, no per-component color overrides.
+### Data model (migration)
 
-## 2. Lovable Cloud + auth
+Two tables in `public`, both publicly readable (cases are meant for citizen browsing), writeable only by service role for now (admin tools come in Phase 9).
 
-Enable Lovable Cloud. Schema (single migration):
+`wanted_persons`:
+- identification: full_name, aliases (text[]), age, gender, ethnicity
+- physical: height_cm, weight_kg, build, hair_color, eye_color, complexion, distinguishing_features (text[])
+- crime: crimes (jsonb — array of {charge, date, severity}), danger_level (enum: high/medium/low), armed (bool), warrant_number, investigating_officer, station
+- last seen: last_seen_location, last_seen_at, last_seen_notes, known_associates (text[]), known_hangouts (text[]), vehicle
+- reward_amount (numeric, nullable)
+- photos (text[] of URLs — use unsplash/placeholder URLs for seed)
+- is_active, created_at, updated_at
 
-- `profiles` (id FK→auth.users, full_name, area text nullable, created_at) + trigger to auto-create on signup
-- `app_role` enum: `guest`, `user`, `detective`, `analyst`, `moderator`, `admin`, `super_admin`
-- `user_roles` (id, user_id, role) — separate table, never on profiles
-- `has_role(uuid, app_role)` SECURITY DEFINER function
-- RLS: users read/update own profile; user_roles readable by self via `has_role`
-- GRANTs to `authenticated` + `service_role` (no anon)
+`missing_persons`:
+- identification: full_name, age_at_disappearance, gender, ethnicity
+- physical: same as above
+- medical: medical_conditions (text[]), cognitive_impairment (bool), special_needs (text[])
+- disappearance: circumstances (enum: voluntary/family_conflict/endangered/medical/unknown), circumstances_narrative, last_seen_location, last_seen_at, last_seen_clothing, possessions (text[])
+- vulnerability: vulnerability_indicators (text[]), is_endangered (bool)
+- contact: family_contact_name, family_contact_phone
+- photos (text[])
+- case_status (enum: active/found/closed), created_at, updated_at
 
-Default role on signup = `user`.
+RLS: `SELECT` open to `anon` + `authenticated` (public safety info); no insert/update/delete policies (service_role only).
 
-Auth methods (per brief defaults): **email/password + Google**. Google via Lovable broker + `supabase--configure_social_auth`.
-
-**Deferred**: 2FA/TOTP, password reset, email verification code UI (rely on Supabase's built-in confirmation email; no custom 6-digit box flow). Account lockout deferred — Supabase rate limits suffice for Phase 1.
-
-## 3. Routes
+### Routes & files
 
 ```
 src/routes/
-  __root.tsx               # head, fonts, QueryClient, auth invalidation
-  index.tsx                # Public landing → "Browse" or "Create account"
-  auth.tsx                 # Combined login/register tabs
-  _authenticated/
-    route.tsx              # Integration-managed gate (ssr: false)
-    dashboard.tsx          # User dashboard
+  cases.tsx                          → landing (dual cards)
+  cases.wanted.tsx                   → wanted gallery
+  cases.wanted.$id.tsx               → wanted detail
+  cases.missing.tsx                  → missing gallery
+  cases.missing.$id.tsx              → missing detail
+
+src/lib/cases/
+  cases.functions.ts                 → server fns: listWanted, listMissing, getWanted, getMissing (use supabaseAdmin since public read)
+  types.ts                           → DTO types
+  filters.ts                         → filter schemas (zod) + helpers (age/time bucketing)
+
+src/components/cases/
+  case-card.tsx                      → shared card (variant: wanted | missing)
+  filter-panel.tsx                   → slide-in drawer (mobile) / sidebar (desktop) using Sheet
+  active-filter-pills.tsx
+  search-bar.tsx
+  gallery-grid.tsx                   → responsive grid + skeleton + empty state
+  pagination.tsx                     → wraps shadcn Pagination
+  danger-badge.tsx, vulnerability-badge.tsx
+  detail/                            → header, physical-description, crime-info, danger-assessment, last-seen, reward-banner, vulnerability-section, contact-section, action-buttons
 ```
 
-Public `/` is the guest dashboard (full case-browse access enabled in Phase 2; Phase 1 shows placeholder action cards). Authenticated `/dashboard` is the user variant.
+### Technical approach
 
-Detective/Admin/Moderator dashboards: **not built in Phase 1**. Role plumbing exists; their routes land in Phases 4/9.
+- **Filters & search live in URL** via `validateSearch` + `zodValidator` (page, q, danger, crimeCategories[], location, timeAdded, reward, sort for wanted; analogous for missing). Survives navigation to detail and back.
+- **Loader pattern:** `ensureQueryData` + `useSuspenseQuery` (TanStack Query, per template default). `loaderDeps` declares the search subset.
+- **Server fns** call `supabaseAdmin` (public data, no auth required) — placed under `src/lib/cases/cases.functions.ts`, import `client.server` inside the handler.
+- **Pagination** (server-side): 20 per page, total count returned. No infinite scroll for Phase 2 — pagination is simpler, accessible, and matches the spec's "pagination or infinite scroll" allowance.
+- **Sort:** newest / oldest / a-z / z-a. "Nearest to you" deferred (no geocoding in Phase 1). "Most relevant" = newest by default.
+- **Images:** seed with stable Unsplash portrait URLs; lazy-load via `loading="lazy"`, `aspect-[4/5]` wrapper, `object-cover`.
+- **Detail views:** full page (not modal) for simplicity, SSR-friendly head() metadata per case.
+- **Action buttons** on detail: "Report Sighting" links to `/report?caseType=wanted&caseId=...` (Phase 3 wires it up); "Share" uses Web Share API with fallback to copy link.
+- **Accessibility:** `aria-live="polite"` region announces "Showing X of Y results" after filter changes; filter panel uses Sheet (Radix → focus trap built in); cards are `<Link>` with full descriptive aria-label.
 
-## 4. Dashboard content (Phase 1 scope)
+### Seed data
 
-Shared layout: SAPS Navy sticky header (logo + auth status + settings), content area with cards, mobile bottom nav (Home/Cases/Report/Activity/Profile — non-implemented tabs route to placeholders).
+Single migration inserts ~50 wanted + ~30 missing with varied danger levels, crime types, vulnerabilities, locations (Soweto, Johannesburg CBD, Sandton, Pretoria, Durban, Cape Town, Port Elizabeth, etc.), and time-missing ranges. Photo URLs use a deterministic stock-photo source.
 
-Included widgets:
-- Time widget (live clock, locale-aware)
-- Personalized greeting (time-of-day + name or generic)
-- Location section: optional `navigator.geolocation` with privacy copy, fallback to manual area text input stored on profile
-- Action cards (role-filtered):
-  - Guest/User: Browse Wanted, Browse Missing, Report Anonymously
-  - User adds: My Reports, Rewards, Community Activity (all link to "Coming in Phase X" placeholder pages)
-- Nearest SAPS station: static placeholder card (real station data is later-phase)
+### Out of scope reminders
 
-**Deferred**: weather widget, news ticker (per user choice — both flagged as later-phase by brief itself).
+- No bookmarking, no "my township" auto-filter from profile.area (would require profile read on public route; the user's area is shown only as a default suggestion in the location filter if signed in — feasible via client-side enhancement, will keep simple).
+- No reward banner content beyond `reward_amount` display.
+- No infinite scroll, no pagination/infinite-scroll preference setting.
 
-## 5. Navigation
+### Build order
 
-- Desktop: left sidebar using shadcn `Sidebar`, collapsible to icon mode
-- Mobile: header hamburger → Sheet; persistent bottom nav for primary actions
-- Breadcrumbs on non-home pages
-- Role-based visibility driven by a single config array keyed on `app_role`
-- Skip-to-content link, full keyboard nav, semantic landmarks (`<header>`, `<nav>`, `<main>`, `<footer>`)
-- Search bar in header — UI only in Phase 1 (no index to query yet)
-
-## 6. Accessibility
-
-- Semantic HTML, single `<main>` per route in `__root.tsx`
-- All icon-only buttons get `aria-label`
-- Form inputs labeled; inline validation via Zod with descriptive messages
-- `prefers-reduced-motion` respected
-- Focus trap inherited from Radix/shadcn primitives (Dialog, Sheet, DropdownMenu)
-- Color never sole carrier of meaning (icon + text always accompany red/gold states)
-- Text strings centralized in `src/lib/i18n/en.ts` as a flat dictionary keyed `dashboard.welcome.greeting` style — no i18n library yet, but ready for Phase 8
-
-## Technical details
-
-- Server fns under `src/lib/auth.functions.ts` and `src/lib/profile.functions.ts`; admin operations gated by `has_role` checks server-side
-- `attachSupabaseAuth` registered in `src/start.ts` `functionMiddleware`
-- `onAuthStateChange` listener in `__root.tsx` invalidates router + query cache
-- Google sign-in via `lovable.auth.signInWithOAuth("google", ...)` + `supabase--configure_social_auth({ providers: ["google"] })`
-- Zod schemas for all forms (email format, password ≥8 chars + uppercase + number + special)
-- Password strength meter component (client-only, no extra deps)
-- TanStack Query for dashboard data; `defaultPreloadStaleTime: 0` already set
-- Lucide icons throughout
-- Validation: build passes, `/` renders for anonymous, `/auth` allows signup → auto-redirect to `/dashboard`, Google flow round-trips, role check via `has_role` works from a server fn
-
-## Out of scope (explicit)
-
-2FA, password reset, weather, news ticker, dark mode, wanted/missing galleries, report submission, chat, rewards, analytics, admin/detective dashboards, real station data, dedicated profile/settings page.
-
+1. Migration: create both tables + RLS + seed data
+2. Server fns + types + filter schemas
+3. Shared components (card, filter panel, search, grid, pagination)
+4. `/cases` landing
+5. Wanted gallery + detail
+6. Missing gallery + detail
+7. Wire `/cases` link in dashboard ActionGrid (already exists from Phase 1)
+8. Verify build, fix lints, screenshot a few key views

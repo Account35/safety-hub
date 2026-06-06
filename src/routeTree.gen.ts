@@ -19,6 +19,7 @@ import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as CasesMissingRouteImport } from './routes/cases.missing'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as CasesWantedIdRouteImport } from './routes/cases.wanted.$id'
+import { Route as CasesMissingIdRouteImport } from './routes/cases.missing.$id'
 
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
@@ -69,6 +70,11 @@ const CasesWantedIdRoute = CasesWantedIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => CasesWantedRoute,
 } as any)
+const CasesMissingIdRoute = CasesMissingIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CasesMissingRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -76,9 +82,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/cases/missing': typeof CasesMissingRoute
+  '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/cases/': typeof CasesIndexRoute
+  '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
 }
 export interface FileRoutesByTo {
@@ -87,9 +94,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/cases/missing': typeof CasesMissingRoute
+  '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/cases': typeof CasesIndexRoute
+  '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
 }
 export interface FileRoutesById {
@@ -100,9 +108,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/report': typeof ReportRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/cases/missing': typeof CasesMissingRoute
+  '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/cases/': typeof CasesIndexRoute
+  '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/cases/missing'
     | '/cases/wanted'
     | '/cases/'
+    | '/cases/missing/$id'
     | '/cases/wanted/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/cases/missing'
     | '/cases/wanted'
     | '/cases'
+    | '/cases/missing/$id'
     | '/cases/wanted/$id'
   id:
     | '__root__'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/cases/missing'
     | '/cases/wanted'
     | '/cases/'
+    | '/cases/missing/$id'
     | '/cases/wanted/$id'
   fileRoutesById: FileRoutesById
 }
@@ -148,7 +160,7 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AuthRoute: typeof AuthRoute
   ReportRoute: typeof ReportRoute
-  CasesMissingRoute: typeof CasesMissingRoute
+  CasesMissingRoute: typeof CasesMissingRouteWithChildren
   CasesWantedRoute: typeof CasesWantedRouteWithChildren
   CasesIndexRoute: typeof CasesIndexRoute
 }
@@ -225,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesWantedIdRouteImport
       parentRoute: typeof CasesWantedRoute
     }
+    '/cases/missing/$id': {
+      id: '/cases/missing/$id'
+      path: '/$id'
+      fullPath: '/cases/missing/$id'
+      preLoaderRoute: typeof CasesMissingIdRouteImport
+      parentRoute: typeof CasesMissingRoute
+    }
   }
 }
 
@@ -238,6 +257,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface CasesMissingRouteChildren {
+  CasesMissingIdRoute: typeof CasesMissingIdRoute
+}
+
+const CasesMissingRouteChildren: CasesMissingRouteChildren = {
+  CasesMissingIdRoute: CasesMissingIdRoute,
+}
+
+const CasesMissingRouteWithChildren = CasesMissingRoute._addFileChildren(
+  CasesMissingRouteChildren,
+)
 
 interface CasesWantedRouteChildren {
   CasesWantedIdRoute: typeof CasesWantedIdRoute
@@ -257,7 +288,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AuthRoute: AuthRoute,
   ReportRoute: ReportRoute,
-  CasesMissingRoute: CasesMissingRoute,
+  CasesMissingRoute: CasesMissingRouteWithChildren,
   CasesWantedRoute: CasesWantedRouteWithChildren,
   CasesIndexRoute: CasesIndexRoute,
 }

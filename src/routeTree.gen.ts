@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
+import { Route as CasesMissingRouteImport } from './routes/cases.missing'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
 const ReportRoute = ReportRouteImport.update({
@@ -52,6 +53,11 @@ const CasesWantedRoute = CasesWantedRouteImport.update({
   path: '/cases/wanted',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CasesMissingRoute = CasesMissingRouteImport.update({
+  id: '/cases/missing',
+  path: '/cases/missing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/cases/missing': typeof CasesMissingRoute
   '/cases/wanted': typeof CasesWantedRoute
   '/cases/': typeof CasesIndexRoute
 }
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/cases/missing': typeof CasesMissingRoute
   '/cases/wanted': typeof CasesWantedRoute
   '/cases': typeof CasesIndexRoute
 }
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/report': typeof ReportRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/cases/missing': typeof CasesMissingRoute
   '/cases/wanted': typeof CasesWantedRoute
   '/cases/': typeof CasesIndexRoute
 }
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/report'
     | '/dashboard'
+    | '/cases/missing'
     | '/cases/wanted'
     | '/cases/'
   fileRoutesByTo: FileRoutesByTo
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/report'
     | '/dashboard'
+    | '/cases/missing'
     | '/cases/wanted'
     | '/cases'
   id:
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/report'
     | '/_authenticated/dashboard'
+    | '/cases/missing'
     | '/cases/wanted'
     | '/cases/'
   fileRoutesById: FileRoutesById
@@ -124,6 +136,7 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AuthRoute: typeof AuthRoute
   ReportRoute: typeof ReportRoute
+  CasesMissingRoute: typeof CasesMissingRoute
   CasesWantedRoute: typeof CasesWantedRoute
   CasesIndexRoute: typeof CasesIndexRoute
 }
@@ -179,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesWantedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cases/missing': {
+      id: '/cases/missing'
+      path: '/cases/missing'
+      fullPath: '/cases/missing'
+      preLoaderRoute: typeof CasesMissingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -206,9 +226,20 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AuthRoute: AuthRoute,
   ReportRoute: ReportRoute,
+  CasesMissingRoute: CasesMissingRoute,
   CasesWantedRoute: CasesWantedRoute,
   CasesIndexRoute: CasesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

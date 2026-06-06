@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      missing_persons: {
+        Row: {
+          age_at_disappearance: number | null
+          build: string | null
+          case_status: Database["public"]["Enums"]["case_status"]
+          circumstances: Database["public"]["Enums"]["disappearance_circumstance"]
+          circumstances_narrative: string | null
+          cognitive_impairment: boolean
+          complexion: string | null
+          created_at: string
+          distinguishing_features: string[]
+          ethnicity: string | null
+          eye_color: string | null
+          family_contact_name: string | null
+          family_contact_phone: string | null
+          full_name: string
+          gender: string | null
+          hair_color: string | null
+          height_cm: number | null
+          id: string
+          is_endangered: boolean
+          last_seen_at: string | null
+          last_seen_clothing: string | null
+          last_seen_location: string | null
+          medical_conditions: string[]
+          photos: string[]
+          possessions: string[]
+          special_needs: string[]
+          updated_at: string
+          vulnerability_indicators: string[]
+          weight_kg: number | null
+        }
+        Insert: {
+          age_at_disappearance?: number | null
+          build?: string | null
+          case_status?: Database["public"]["Enums"]["case_status"]
+          circumstances?: Database["public"]["Enums"]["disappearance_circumstance"]
+          circumstances_narrative?: string | null
+          cognitive_impairment?: boolean
+          complexion?: string | null
+          created_at?: string
+          distinguishing_features?: string[]
+          ethnicity?: string | null
+          eye_color?: string | null
+          family_contact_name?: string | null
+          family_contact_phone?: string | null
+          full_name: string
+          gender?: string | null
+          hair_color?: string | null
+          height_cm?: number | null
+          id?: string
+          is_endangered?: boolean
+          last_seen_at?: string | null
+          last_seen_clothing?: string | null
+          last_seen_location?: string | null
+          medical_conditions?: string[]
+          photos?: string[]
+          possessions?: string[]
+          special_needs?: string[]
+          updated_at?: string
+          vulnerability_indicators?: string[]
+          weight_kg?: number | null
+        }
+        Update: {
+          age_at_disappearance?: number | null
+          build?: string | null
+          case_status?: Database["public"]["Enums"]["case_status"]
+          circumstances?: Database["public"]["Enums"]["disappearance_circumstance"]
+          circumstances_narrative?: string | null
+          cognitive_impairment?: boolean
+          complexion?: string | null
+          created_at?: string
+          distinguishing_features?: string[]
+          ethnicity?: string | null
+          eye_color?: string | null
+          family_contact_name?: string | null
+          family_contact_phone?: string | null
+          full_name?: string
+          gender?: string | null
+          hair_color?: string | null
+          height_cm?: number | null
+          id?: string
+          is_endangered?: boolean
+          last_seen_at?: string | null
+          last_seen_clothing?: string | null
+          last_seen_location?: string | null
+          medical_conditions?: string[]
+          photos?: string[]
+          possessions?: string[]
+          special_needs?: string[]
+          updated_at?: string
+          vulnerability_indicators?: string[]
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           area: string | null
@@ -59,6 +155,108 @@ export type Database = {
         }
         Relationships: []
       }
+      wanted_persons: {
+        Row: {
+          age: number | null
+          aliases: string[]
+          armed: boolean
+          build: string | null
+          complexion: string | null
+          created_at: string
+          crime_category: string | null
+          crimes: Json
+          danger_level: Database["public"]["Enums"]["danger_level"]
+          distinguishing_features: string[]
+          ethnicity: string | null
+          eye_color: string | null
+          full_name: string
+          gender: string | null
+          hair_color: string | null
+          height_cm: number | null
+          id: string
+          investigating_officer: string | null
+          is_active: boolean
+          known_associates: string[]
+          known_hangouts: string[]
+          last_seen_at: string | null
+          last_seen_location: string | null
+          last_seen_notes: string | null
+          photos: string[]
+          reward_amount: number | null
+          station: string | null
+          updated_at: string
+          vehicle: string | null
+          warrant_number: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          age?: number | null
+          aliases?: string[]
+          armed?: boolean
+          build?: string | null
+          complexion?: string | null
+          created_at?: string
+          crime_category?: string | null
+          crimes?: Json
+          danger_level?: Database["public"]["Enums"]["danger_level"]
+          distinguishing_features?: string[]
+          ethnicity?: string | null
+          eye_color?: string | null
+          full_name: string
+          gender?: string | null
+          hair_color?: string | null
+          height_cm?: number | null
+          id?: string
+          investigating_officer?: string | null
+          is_active?: boolean
+          known_associates?: string[]
+          known_hangouts?: string[]
+          last_seen_at?: string | null
+          last_seen_location?: string | null
+          last_seen_notes?: string | null
+          photos?: string[]
+          reward_amount?: number | null
+          station?: string | null
+          updated_at?: string
+          vehicle?: string | null
+          warrant_number?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          age?: number | null
+          aliases?: string[]
+          armed?: boolean
+          build?: string | null
+          complexion?: string | null
+          created_at?: string
+          crime_category?: string | null
+          crimes?: Json
+          danger_level?: Database["public"]["Enums"]["danger_level"]
+          distinguishing_features?: string[]
+          ethnicity?: string | null
+          eye_color?: string | null
+          full_name?: string
+          gender?: string | null
+          hair_color?: string | null
+          height_cm?: number | null
+          id?: string
+          investigating_officer?: string | null
+          is_active?: boolean
+          known_associates?: string[]
+          known_hangouts?: string[]
+          last_seen_at?: string | null
+          last_seen_location?: string | null
+          last_seen_notes?: string | null
+          photos?: string[]
+          reward_amount?: number | null
+          station?: string | null
+          updated_at?: string
+          vehicle?: string | null
+          warrant_number?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -81,6 +279,14 @@ export type Database = {
         | "moderator"
         | "admin"
         | "super_admin"
+      case_status: "active" | "found" | "closed"
+      danger_level: "high" | "medium" | "low"
+      disappearance_circumstance:
+        | "voluntary"
+        | "family_conflict"
+        | "endangered"
+        | "medical"
+        | "unknown"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -216,6 +422,15 @@ export const Constants = {
         "moderator",
         "admin",
         "super_admin",
+      ],
+      case_status: ["active", "found", "closed"],
+      danger_level: ["high", "medium", "low"],
+      disappearance_circumstance: [
+        "voluntary",
+        "family_conflict",
+        "endangered",
+        "medical",
+        "unknown",
       ],
     },
   },

@@ -18,6 +18,7 @@ import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as CasesMissingRouteImport } from './routes/cases.missing'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as CasesWantedIdRouteImport } from './routes/cases.wanted.$id'
 
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
@@ -63,6 +64,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const CasesWantedIdRoute = CasesWantedIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CasesWantedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,8 +77,9 @@ export interface FileRoutesByFullPath {
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/cases/missing': typeof CasesMissingRoute
-  '/cases/wanted': typeof CasesWantedRoute
+  '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/cases/': typeof CasesIndexRoute
+  '/cases/wanted/$id': typeof CasesWantedIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -81,8 +88,9 @@ export interface FileRoutesByTo {
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/cases/missing': typeof CasesMissingRoute
-  '/cases/wanted': typeof CasesWantedRoute
+  '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/cases': typeof CasesIndexRoute
+  '/cases/wanted/$id': typeof CasesWantedIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -93,8 +101,9 @@ export interface FileRoutesById {
   '/report': typeof ReportRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/cases/missing': typeof CasesMissingRoute
-  '/cases/wanted': typeof CasesWantedRoute
+  '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/cases/': typeof CasesIndexRoute
+  '/cases/wanted/$id': typeof CasesWantedIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/cases/missing'
     | '/cases/wanted'
     | '/cases/'
+    | '/cases/wanted/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/cases/missing'
     | '/cases/wanted'
     | '/cases'
+    | '/cases/wanted/$id'
   id:
     | '__root__'
     | '/'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/cases/missing'
     | '/cases/wanted'
     | '/cases/'
+    | '/cases/wanted/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -137,7 +149,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ReportRoute: typeof ReportRoute
   CasesMissingRoute: typeof CasesMissingRoute
-  CasesWantedRoute: typeof CasesWantedRoute
+  CasesWantedRoute: typeof CasesWantedRouteWithChildren
   CasesIndexRoute: typeof CasesIndexRoute
 }
 
@@ -206,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/cases/wanted/$id': {
+      id: '/cases/wanted/$id'
+      path: '/$id'
+      fullPath: '/cases/wanted/$id'
+      preLoaderRoute: typeof CasesWantedIdRouteImport
+      parentRoute: typeof CasesWantedRoute
+    }
   }
 }
 
@@ -220,6 +239,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CasesWantedRouteChildren {
+  CasesWantedIdRoute: typeof CasesWantedIdRoute
+}
+
+const CasesWantedRouteChildren: CasesWantedRouteChildren = {
+  CasesWantedIdRoute: CasesWantedIdRoute,
+}
+
+const CasesWantedRouteWithChildren = CasesWantedRoute._addFileChildren(
+  CasesWantedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -227,9 +258,19 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ReportRoute: ReportRoute,
   CasesMissingRoute: CasesMissingRoute,
-  CasesWantedRoute: CasesWantedRoute,
+  CasesWantedRoute: CasesWantedRouteWithChildren,
   CasesIndexRoute: CasesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

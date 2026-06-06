@@ -50,7 +50,7 @@ function WantedGallery() {
   const navigate = useNavigate({ from: Route.fullPath });
 
   const update = (patch: Partial<WantedSearch>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch }) });
+    navigate({ search: (prev: WantedSearch) => ({ ...prev, ...patch }) });
   const clear = () =>
     navigate({
       search: {
@@ -71,11 +71,11 @@ function WantedGallery() {
       label: search.danger === "high" ? "High risk" : "Medium & high",
       remove: () => update({ danger: "all", page: 1 }),
     },
-    ...search.categories.map((c) => ({
+    ...search.categories.map((c: string) => ({
       key: `cat-${c}`,
       label: c,
       remove: () =>
-        update({ categories: search.categories.filter((x) => x !== c), page: 1 }),
+        update({ categories: search.categories.filter((x: string) => x !== c), page: 1 }),
     })),
     search.location && {
       key: "loc",

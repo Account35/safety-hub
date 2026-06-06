@@ -195,20 +195,18 @@ export function ActionGrid() {
       </h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <ActionCard
-          to="/cases"
+          to="/cases/wanted"
           icon={Search}
           title={t.dashboard.actions.browseWanted}
           description={t.dashboard.actions.browseWantedDesc}
           tone="destructive"
-          badge="Soon"
         />
         <ActionCard
-          to="/cases"
+          to="/cases/missing"
           icon={UserSearch}
           title={t.dashboard.actions.browseMissing}
           description={t.dashboard.actions.browseMissingDesc}
           tone="primary"
-          badge="Soon"
         />
         <ActionCard
           to="/report"

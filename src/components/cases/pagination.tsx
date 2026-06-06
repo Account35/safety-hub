@@ -31,8 +31,11 @@ export function CasePagination({
       </p>
       <div className="flex items-center gap-2">
         <Button asChild variant="outline" size="sm" disabled={page === 1}>
-          {/* @ts-expect-error generic link */}
-          <Link {...buildLink(prev)} aria-label="Previous page">
+          <Link
+            to={buildLink(prev).to}
+            search={buildLink(prev).search}
+            aria-label="Previous page"
+          >
             <ChevronLeft className="size-4" /> Prev
           </Link>
         </Button>
@@ -40,8 +43,11 @@ export function CasePagination({
           Page {page} / {totalPages}
         </span>
         <Button asChild variant="outline" size="sm" disabled={page === totalPages}>
-          {/* @ts-expect-error generic link */}
-          <Link {...buildLink(next)} aria-label="Next page">
+          <Link
+            to={buildLink(next).to}
+            search={buildLink(next).search}
+            aria-label="Next page"
+          >
             Next <ChevronRight className="size-4" />
           </Link>
         </Button>

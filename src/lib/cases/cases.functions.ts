@@ -89,7 +89,13 @@ export const listMissing = createServerFn({ method: "POST" })
 
     if (data.q.trim()) q = q.ilike("full_name", `%${data.q.trim()}%`);
     if (data.location.trim()) q = q.ilike("last_seen_location", `%${data.location.trim()}%`);
-    if (data.circumstances.length) q = q.in("circumstances", data.circumstances);
+    if (data.circumstances.length)
+      q = q.in(
+        "circumstances",
+        data.circumstances as Array<
+          "voluntary" | "family_conflict" | "endangered" | "medical" | "unknown"
+        >,
+      );
     if (data.vulns.length) q = q.overlaps("vulnerability_indicators", data.vulns);
     if (data.ages.length) {
       const ranges = data.ages.map(ageRange).filter(Boolean) as [number, number][];

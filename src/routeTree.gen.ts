@@ -15,6 +15,7 @@ import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
+import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
 const ReportRoute = ReportRouteImport.update({
@@ -46,6 +47,11 @@ const CasesIndexRoute = CasesIndexRouteImport.update({
   path: '/cases/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CasesWantedRoute = CasesWantedRouteImport.update({
+  id: '/cases/wanted',
+  path: '/cases/wanted',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/cases/wanted': typeof CasesWantedRoute
   '/cases/': typeof CasesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/cases/wanted': typeof CasesWantedRoute
   '/cases': typeof CasesIndexRoute
 }
 export interface FileRoutesById {
@@ -76,13 +84,28 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/report': typeof ReportRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/cases/wanted': typeof CasesWantedRoute
   '/cases/': typeof CasesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/activity' | '/auth' | '/report' | '/dashboard' | '/cases/'
+  fullPaths:
+    | '/'
+    | '/activity'
+    | '/auth'
+    | '/report'
+    | '/dashboard'
+    | '/cases/wanted'
+    | '/cases/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/activity' | '/auth' | '/report' | '/dashboard' | '/cases'
+  to:
+    | '/'
+    | '/activity'
+    | '/auth'
+    | '/report'
+    | '/dashboard'
+    | '/cases/wanted'
+    | '/cases'
   id:
     | '__root__'
     | '/'
@@ -91,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/report'
     | '/_authenticated/dashboard'
+    | '/cases/wanted'
     | '/cases/'
   fileRoutesById: FileRoutesById
 }
@@ -100,6 +124,7 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AuthRoute: typeof AuthRoute
   ReportRoute: typeof ReportRoute
+  CasesWantedRoute: typeof CasesWantedRoute
   CasesIndexRoute: typeof CasesIndexRoute
 }
 
@@ -147,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cases/wanted': {
+      id: '/cases/wanted'
+      path: '/cases/wanted'
+      fullPath: '/cases/wanted'
+      preLoaderRoute: typeof CasesWantedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -174,6 +206,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AuthRoute: AuthRoute,
   ReportRoute: ReportRoute,
+  CasesWantedRoute: CasesWantedRoute,
   CasesIndexRoute: CasesIndexRoute,
 }
 export const routeTree = rootRouteImport

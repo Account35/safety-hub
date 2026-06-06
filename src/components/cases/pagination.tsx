@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -6,12 +6,12 @@ export function CasePagination({
   page,
   total,
   pageSize,
-  buildLink,
+  renderLink,
 }: {
   page: number;
   total: number;
   pageSize: number;
-  buildLink: (page: number) => { to: string; search: Record<string, unknown> };
+  renderLink: (page: number, children: ReactNode, label: string) => ReactNode;
 }) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   if (totalPages <= 1) return null;
@@ -31,25 +31,25 @@ export function CasePagination({
       </p>
       <div className="flex items-center gap-2">
         <Button asChild variant="outline" size="sm" disabled={page === 1}>
-          <Link
-            to={buildLink(prev).to}
-            search={buildLink(prev).search}
-            aria-label="Previous page"
-          >
-            <ChevronLeft className="size-4" /> Prev
-          </Link>
+          {renderLink(
+            prev,
+            <>
+              <ChevronLeft className="size-4" /> Prev
+            </>,
+            "Previous page",
+          )}
         </Button>
         <span className="text-sm tabular-nums" aria-live="polite">
           Page {page} / {totalPages}
         </span>
         <Button asChild variant="outline" size="sm" disabled={page === totalPages}>
-          <Link
-            to={buildLink(next).to}
-            search={buildLink(next).search}
-            aria-label="Next page"
-          >
-            Next <ChevronRight className="size-4" />
-          </Link>
+          {renderLink(
+            next,
+            <>
+              Next <ChevronRight className="size-4" />
+            </>,
+            "Next page",
+          )}
         </Button>
       </div>
     </nav>

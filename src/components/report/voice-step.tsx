@@ -6,7 +6,7 @@ import type { ReportDraft } from "@/lib/reports/types";
 
 const MAX_SECONDS = 180;
 
-type RecState = "idle" | "permission" | "denied" | "recording" | "ready" | "playing";
+type RecState = "idle" | "permission" | "denied" | "recording" | "ready";
 
 function fmt(s: number) {
   const m = Math.floor(s / 60);
@@ -29,6 +29,7 @@ export function VoiceStep({
 }) {
   const [state, setState] = useState<RecState>(draft.voice ? "ready" : "idle");
   const [elapsed, setElapsed] = useState(0);
+  const [playing, setPlaying] = useState(false);
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
@@ -140,7 +141,7 @@ export function VoiceStep({
             <audio
               ref={audioRef}
               src={draft.voice.previewUrl}
-              onEnded={() => setState("ready")}
+              onEnded={() => setPlaying(false)}
               hidden
             />
             <div className="text-sm text-muted-foreground">
@@ -150,17 +151,17 @@ export function VoiceStep({
               <Button
                 size="lg"
                 onClick={() => {
-                  if (state === "playing") {
+                  if (playing) {
                     audioRef.current?.pause();
-                    setState("ready");
+                    setPlaying(false);
                   } else {
                     audioRef.current?.play();
-                    setState("playing");
+                    setPlaying(true);
                   }
                 }}
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
               >
-                {state === "playing" ? (
+                {playing ? (
                   <>
                     <Pause className="h-4 w-4" /> Pause
                   </>

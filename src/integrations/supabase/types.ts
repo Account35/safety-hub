@@ -134,6 +134,90 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          accuracy_confirmed: boolean
+          case_id: string
+          case_type: string
+          companion_description: string | null
+          confidence_level: number | null
+          created_at: string
+          id: string
+          location_approximate: Json | null
+          location_landmarks: string[]
+          location_privacy_level: string
+          location_township: string | null
+          photos: Json
+          report_id: string
+          reporter_anon_code: string
+          reporter_id: string | null
+          reporting_methods: string[]
+          safety_acknowledgment: boolean
+          sighting_date: string | null
+          sighting_time: string | null
+          status: string
+          submission_timestamp: string
+          text_description: string | null
+          updated_at: string
+          voice_recording_path: string | null
+          voluntary_confirmed: boolean
+        }
+        Insert: {
+          accuracy_confirmed?: boolean
+          case_id: string
+          case_type: string
+          companion_description?: string | null
+          confidence_level?: number | null
+          created_at?: string
+          id?: string
+          location_approximate?: Json | null
+          location_landmarks?: string[]
+          location_privacy_level?: string
+          location_township?: string | null
+          photos?: Json
+          report_id: string
+          reporter_anon_code: string
+          reporter_id?: string | null
+          reporting_methods?: string[]
+          safety_acknowledgment?: boolean
+          sighting_date?: string | null
+          sighting_time?: string | null
+          status?: string
+          submission_timestamp?: string
+          text_description?: string | null
+          updated_at?: string
+          voice_recording_path?: string | null
+          voluntary_confirmed?: boolean
+        }
+        Update: {
+          accuracy_confirmed?: boolean
+          case_id?: string
+          case_type?: string
+          companion_description?: string | null
+          confidence_level?: number | null
+          created_at?: string
+          id?: string
+          location_approximate?: Json | null
+          location_landmarks?: string[]
+          location_privacy_level?: string
+          location_township?: string | null
+          photos?: Json
+          report_id?: string
+          reporter_anon_code?: string
+          reporter_id?: string | null
+          reporting_methods?: string[]
+          safety_acknowledgment?: boolean
+          sighting_date?: string | null
+          sighting_time?: string | null
+          status?: string
+          submission_timestamp?: string
+          text_description?: string | null
+          updated_at?: string
+          voice_recording_path?: string | null
+          voluntary_confirmed?: boolean
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

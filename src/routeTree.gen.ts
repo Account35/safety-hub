@@ -10,11 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as ChatsRouteImport } from './routes/chats'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
+import { Route as ChatsIdRouteImport } from './routes/chats.$id'
 import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as CasesMissingRouteImport } from './routes/cases.missing'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -24,6 +26,11 @@ import { Route as CasesMissingIdRouteImport } from './routes/cases.missing.$id'
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatsRoute = ChatsRouteImport.update({
+  id: '/chats',
+  path: '/chats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -49,6 +56,11 @@ const CasesIndexRoute = CasesIndexRouteImport.update({
   id: '/cases/',
   path: '/cases/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ChatsIdRoute = ChatsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ChatsRoute,
 } as any)
 const CasesWantedRoute = CasesWantedRouteImport.update({
   id: '/cases/wanted',
@@ -80,10 +92,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/auth': typeof AuthRoute
+  '/chats': typeof ChatsRouteWithChildren
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
+  '/chats/$id': typeof ChatsIdRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -92,10 +106,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/auth': typeof AuthRoute
+  '/chats': typeof ChatsRouteWithChildren
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
+  '/chats/$id': typeof ChatsIdRoute
   '/cases': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -106,10 +122,12 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/activity': typeof ActivityRoute
   '/auth': typeof AuthRoute
+  '/chats': typeof ChatsRouteWithChildren
   '/report': typeof ReportRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
+  '/chats/$id': typeof ChatsIdRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -120,10 +138,12 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/auth'
+    | '/chats'
     | '/report'
     | '/dashboard'
     | '/cases/missing'
     | '/cases/wanted'
+    | '/chats/$id'
     | '/cases/'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -132,10 +152,12 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/auth'
+    | '/chats'
     | '/report'
     | '/dashboard'
     | '/cases/missing'
     | '/cases/wanted'
+    | '/chats/$id'
     | '/cases'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -145,10 +167,12 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/activity'
     | '/auth'
+    | '/chats'
     | '/report'
     | '/_authenticated/dashboard'
     | '/cases/missing'
     | '/cases/wanted'
+    | '/chats/$id'
     | '/cases/'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -159,6 +183,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ActivityRoute: typeof ActivityRoute
   AuthRoute: typeof AuthRoute
+  ChatsRoute: typeof ChatsRouteWithChildren
   ReportRoute: typeof ReportRoute
   CasesMissingRoute: typeof CasesMissingRouteWithChildren
   CasesWantedRoute: typeof CasesWantedRouteWithChildren
@@ -172,6 +197,13 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chats': {
+      id: '/chats'
+      path: '/chats'
+      fullPath: '/chats'
+      preLoaderRoute: typeof ChatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -208,6 +240,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/cases/'
       preLoaderRoute: typeof CasesIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/chats/$id': {
+      id: '/chats/$id'
+      path: '/$id'
+      fullPath: '/chats/$id'
+      preLoaderRoute: typeof ChatsIdRouteImport
+      parentRoute: typeof ChatsRoute
     }
     '/cases/wanted': {
       id: '/cases/wanted'
@@ -258,6 +297,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ChatsRouteChildren {
+  ChatsIdRoute: typeof ChatsIdRoute
+}
+
+const ChatsRouteChildren: ChatsRouteChildren = {
+  ChatsIdRoute: ChatsIdRoute,
+}
+
+const ChatsRouteWithChildren = ChatsRoute._addFileChildren(ChatsRouteChildren)
+
 interface CasesMissingRouteChildren {
   CasesMissingIdRoute: typeof CasesMissingIdRoute
 }
@@ -287,6 +336,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ActivityRoute: ActivityRoute,
   AuthRoute: AuthRoute,
+  ChatsRoute: ChatsRouteWithChildren,
   ReportRoute: ReportRoute,
   CasesMissingRoute: CasesMissingRouteWithChildren,
   CasesWantedRoute: CasesWantedRouteWithChildren,

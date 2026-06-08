@@ -4,17 +4,15 @@ import { fallback } from "@tanstack/zod-adapter";
 export const PAGE_SIZE = 20;
 
 const csv = (allowed: readonly string[]) =>
-  z
-    .string()
-    .optional()
-    .transform((v) =>
-      v
-        ? v
-            .split(",")
-            .map((s) => s.trim())
-            .filter((s) => allowed.includes(s))
-        : [],
-    );
+  z.preprocess(
+    (v) => {
+      if (Array.isArray(v)) return v.filter((s) => typeof s === "string");
+      if (typeof v === "string") return v.split(",").map((s) => s.trim());
+      return [];
+    },
+    z.array(z.string()).default([]),
+  )
+  .transform((arr) => arr.filter((s) => allowed.includes(s)));
 
 export const WANTED_CATEGORIES = [
   "Violent Crimes",

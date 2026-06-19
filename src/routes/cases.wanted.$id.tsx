@@ -8,6 +8,7 @@ import { CrimeBadge, DangerBadge } from "@/components/cases/badges";
 import { ShareButton } from "@/components/cases/share-button";
 import { getWanted } from "@/lib/cases/cases.functions";
 import { formatRelative } from "@/lib/cases/filters";
+import { openReportFlow } from "@/lib/reports/navigation";
 import type { Crime } from "@/lib/cases/types";
 
 const wantedQuery = (id: string) =>
@@ -40,7 +41,9 @@ export const Route = createFileRoute("/cases/wanted/$id")({
   component: WantedDetail,
   errorComponent: ({ error }) => (
     <PageShell>
-      <p role="alert" className="text-sm text-destructive">Error: {error.message}</p>
+      <p role="alert" className="text-sm text-destructive">
+        Error: {error.message}
+      </p>
     </PageShell>
   ),
   notFoundComponent: () => (
@@ -98,7 +101,9 @@ function WantedDetail() {
             <AlertTriangle className="size-6 shrink-0" />
             <div>
               <p className="text-base font-bold uppercase tracking-wide">Armed and dangerous</p>
-              <p className="text-sm">Do NOT approach. Maintain safe distance and contact SAPS on 10111.</p>
+              <p className="text-sm">
+                Do NOT approach. Maintain safe distance and contact SAPS on 10111.
+              </p>
             </div>
           </div>
         )}
@@ -148,7 +153,9 @@ function WantedDetail() {
             )}
 
             <section aria-labelledby="phys" className="space-y-3">
-              <h2 id="phys" className="text-lg font-semibold">Physical description</h2>
+              <h2 id="phys" className="text-lg font-semibold">
+                Physical description
+              </h2>
               <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <Row label="Age" value={p.age} />
                 <Row label="Gender" value={p.gender} />
@@ -178,7 +185,9 @@ function WantedDetail() {
 
         {crimes.length > 0 && (
           <section aria-labelledby="crimes" className="space-y-3">
-            <h2 id="crimes" className="text-lg font-semibold">Crimes &amp; charges</h2>
+            <h2 id="crimes" className="text-lg font-semibold">
+              Crimes &amp; charges
+            </h2>
             <ul className="space-y-2">
               {crimes.map((c, i) => (
                 <li key={i} className="flex items-start gap-3 rounded-md border p-3">
@@ -186,7 +195,9 @@ function WantedDetail() {
                   <div>
                     <p className="font-medium">{c.charge}</p>
                     {c.date && (
-                      <p className="text-xs text-muted-foreground">{new Date(c.date).toLocaleDateString()}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(c.date).toLocaleDateString()}
+                      </p>
                     )}
                   </div>
                 </li>
@@ -196,7 +207,9 @@ function WantedDetail() {
         )}
 
         <section aria-labelledby="warrant" className="space-y-3">
-          <h2 id="warrant" className="text-lg font-semibold">Warrant details</h2>
+          <h2 id="warrant" className="text-lg font-semibold">
+            Warrant details
+          </h2>
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Row label="Case number" value={p.warrant_number} />
             <Row label="Station" value={p.station} />
@@ -205,7 +218,9 @@ function WantedDetail() {
         </section>
 
         <section aria-labelledby="last-seen" className="space-y-3">
-          <h2 id="last-seen" className="text-lg font-semibold">Last seen</h2>
+          <h2 id="last-seen" className="text-lg font-semibold">
+            Last seen
+          </h2>
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Row
               label="Location"
@@ -228,7 +243,9 @@ function WantedDetail() {
               }
             />
           </dl>
-          {p.last_seen_notes && <p className="text-sm text-muted-foreground">{p.last_seen_notes}</p>}
+          {p.last_seen_notes && (
+            <p className="text-sm text-muted-foreground">{p.last_seen_notes}</p>
+          )}
           {p.known_associates.length > 0 && (
             <Row label="Known associates" value={p.known_associates.join(", ")} />
           )}
@@ -239,14 +256,13 @@ function WantedDetail() {
         </section>
 
         <div className="sticky bottom-20 z-10 -mx-4 flex flex-col gap-2 border-t bg-background/95 p-4 backdrop-blur sm:static sm:mx-0 sm:flex-row sm:border-0 sm:bg-transparent sm:p-0 md:bottom-0">
-          <Button asChild className="h-12 flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-            <Link
-              to="/report"
-              search={{ caseType: "wanted", caseId: p.id }}
-              aria-label={`Report sighting of ${p.full_name}`}
-            >
-              Report sighting
-            </Link>
+          <Button
+            type="button"
+            onClick={() => openReportFlow("wanted", p.id)}
+            className="h-12 flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+            aria-label={`Report sighting of ${p.full_name}`}
+          >
+            Report sighting
           </Button>
           <ShareButton title={p.full_name} text={`Wanted: ${p.full_name}`} />
         </div>

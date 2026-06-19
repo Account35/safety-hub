@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +21,7 @@ import { ConfirmationStep } from "@/components/report/confirmation-step";
 import { useReportDraft } from "@/lib/reports/draft";
 import { generateAnonCode } from "@/lib/reports/reference";
 import { dataUrlToBlob } from "@/lib/reports/exif-strip";
+import { openReportFlow } from "@/lib/reports/navigation";
 import { getCaseSummary, submitReport } from "@/lib/reports/reports.functions";
 import { listMissing, listWanted } from "@/lib/cases/cases.functions";
 import { formatRelative, timeMissingLabel } from "@/lib/cases/filters";
@@ -53,18 +54,38 @@ type StepKey = "method" | "text" | "voice" | "photo" | "location" | "preview" | 
 function ReportPage() {
   const { caseType, caseId } = Route.useSearch();
   const navigate = useNavigate();
+  const [selectedCase, setSelectedCase] = useState<{
+    caseType: "wanted" | "missing";
+    caseId: string;
+  } | null>(null);
 
-  if (!caseType || !caseId) {
+  const activeCaseType = caseType ?? selectedCase?.caseType;
+  const activeCaseId = caseId ?? selectedCase?.caseId;
+
+  useEffect(() => {
+    if (caseType && caseId) setSelectedCase(null);
+  }, [caseType, caseId]);
+
+  if (!activeCaseType || !activeCaseId) {
     return (
       <PageShell>
-        <CaseSelection />
+        <CaseSelection
+          onSelect={(next) => {
+            setSelectedCase(next);
+            openReportFlow(next.caseType, next.caseId);
+          }}
+        />
       </PageShell>
     );
   }
 
   return (
     <PageShell>
-      <Wizard caseType={caseType} caseId={caseId} onExit={() => navigate({ to: "/cases" })} />
+      <Wizard
+        caseType={activeCaseType}
+        caseId={activeCaseId}
+        onExit={() => navigate({ to: "/cases" })}
+      />
     </PageShell>
   );
 }
@@ -91,7 +112,11 @@ const missingDefaults = {
   sort: "newest" as const,
 };
 
-function CaseSelection() {
+function CaseSelection({
+  onSelect,
+}: {
+  onSelect: (next: { caseType: "wanted" | "missing"; caseId: string }) => void;
+}) {
   const [caseType, setCaseType] = useState<"wanted" | "missing">("wanted");
   const wantedFn = useServerFn(listWanted);
   const missingFn = useServerFn(listMissing);
@@ -192,10 +217,18 @@ function CaseSelection() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {wantedActive
             ? (items as WantedListItem[]).map((item) => (
-                <ReportWantedCard key={item.id} item={item} />
+                <ReportWantedCard
+                  key={item.id}
+                  item={item}
+                  onReport={() => onSelect({ caseType: "wanted", caseId: item.id })}
+                />
               ))
             : (items as MissingListItem[]).map((item) => (
-                <ReportMissingCard key={item.id} item={item} />
+                <ReportMissingCard
+                  key={item.id}
+                  item={item}
+                  onReport={() => onSelect({ caseType: "missing", caseId: item.id })}
+                />
               ))}
         </div>
       )}
@@ -203,7 +236,7 @@ function CaseSelection() {
   );
 }
 
-function ReportWantedCard({ item }: { item: WantedListItem }) {
+function ReportWantedCard({ item, onReport }: { item: WantedListItem; onReport: () => void }) {
   return (
     <Card className="overflow-hidden border-l-4 border-l-destructive">
       <CasePhoto src={item.photos[0]} alt={`Photograph of wanted person ${item.full_name}`} />
@@ -216,10 +249,12 @@ function ReportWantedCard({ item }: { item: WantedListItem }) {
             {item.crime_category ?? "Wanted person"} - {formatRelative(item.last_seen_at)}
           </p>
         </div>
-        <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-          <Link to="/report" search={{ caseType: "wanted", caseId: item.id }}>
-            Report sighting
-          </Link>
+        <Button
+          type="button"
+          onClick={onReport}
+          className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+        >
+          Report sighting
         </Button>
         <Button asChild variant="outline" className="w-full">
           <Link to="/cases/wanted/$id" params={{ id: item.id }}>
@@ -231,7 +266,7 @@ function ReportWantedCard({ item }: { item: WantedListItem }) {
   );
 }
 
-function ReportMissingCard({ item }: { item: MissingListItem }) {
+function ReportMissingCard({ item, onReport }: { item: MissingListItem; onReport: () => void }) {
   const meta = timeMissingLabel(item.last_seen_at);
   return (
     <Card className="overflow-hidden border-l-4 border-l-primary">
@@ -246,10 +281,12 @@ function ReportMissingCard({ item }: { item: MissingListItem }) {
             {item.last_seen_location ? ` - ${item.last_seen_location}` : ""}
           </p>
         </div>
-        <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-          <Link to="/report" search={{ caseType: "missing", caseId: item.id }}>
-            Report sighting
-          </Link>
+        <Button
+          type="button"
+          onClick={onReport}
+          className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+        >
+          Report sighting
         </Button>
         <Button asChild variant="outline" className="w-full">
           <Link to="/cases/missing/$id" params={{ id: item.id }}>

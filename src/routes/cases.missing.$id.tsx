@@ -8,6 +8,7 @@ import { VulnerabilityBadge } from "@/components/cases/badges";
 import { ShareButton } from "@/components/cases/share-button";
 import { getMissing } from "@/lib/cases/cases.functions";
 import { timeMissingLabel } from "@/lib/cases/filters";
+import { openReportFlow } from "@/lib/reports/navigation";
 
 const missingQuery = (id: string) =>
   queryOptions({
@@ -36,7 +37,9 @@ export const Route = createFileRoute("/cases/missing/$id")({
   component: MissingDetail,
   errorComponent: ({ error }) => (
     <PageShell>
-      <p role="alert" className="text-sm text-destructive">Error: {error.message}</p>
+      <p role="alert" className="text-sm text-destructive">
+        Error: {error.message}
+      </p>
     </PageShell>
   ),
   notFoundComponent: () => (
@@ -88,19 +91,20 @@ function MissingDetail() {
         </Button>
 
         {meta.critical && (
-          <div
-            role="alert"
-            className="rounded-md bg-destructive p-4 text-destructive-foreground"
-          >
+          <div role="alert" className="rounded-md bg-destructive p-4 text-destructive-foreground">
             <p className="text-base font-bold uppercase tracking-wide">Last 48 hours · Urgent</p>
-            <p className="text-sm">Any information could be critical. Contact SAPS or the family immediately.</p>
+            <p className="text-sm">
+              Any information could be critical. Contact SAPS or the family immediately.
+            </p>
           </div>
         )}
 
         {p.is_endangered && !meta.critical && (
           <div className="flex items-start gap-2 rounded-md bg-orange-500/15 p-3 text-orange-900">
             <AlertCircle className="mt-0.5 size-5 shrink-0" />
-            <p className="text-sm font-medium">Endangered — vulnerable person, please prioritize safety.</p>
+            <p className="text-sm font-medium">
+              Endangered — vulnerable person, please prioritize safety.
+            </p>
           </div>
         )}
 
@@ -124,7 +128,11 @@ function MissingDetail() {
               <h1 className="font-display text-3xl font-bold text-primary">{p.full_name}</h1>
               <p className="inline-flex items-center gap-1 text-sm">
                 <Clock className="size-4" />
-                <span className={meta.urgent ? "font-bold text-orange-700" : "font-medium text-blue-700"}>
+                <span
+                  className={
+                    meta.urgent ? "font-bold text-orange-700" : "font-medium text-blue-700"
+                  }
+                >
                   {meta.text}
                 </span>
               </p>
@@ -136,12 +144,17 @@ function MissingDetail() {
             </header>
 
             <section aria-labelledby="phys" className="space-y-3">
-              <h2 id="phys" className="text-lg font-semibold">Physical description</h2>
+              <h2 id="phys" className="text-lg font-semibold">
+                Physical description
+              </h2>
               <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <Row label="Age at disappearance" value={p.age_at_disappearance} />
                 <Row label="Gender" value={p.gender} />
                 <Row label="Ethnicity" value={p.ethnicity} />
-                <Row label="Height" value={p.height_cm ? `${(p.height_cm / 100).toFixed(2)}m` : null} />
+                <Row
+                  label="Height"
+                  value={p.height_cm ? `${(p.height_cm / 100).toFixed(2)}m` : null}
+                />
                 <Row label="Weight" value={p.weight_kg ? `${p.weight_kg}kg` : null} />
                 <Row label="Build" value={p.build} />
                 <Row label="Hair" value={p.hair_color} />
@@ -155,15 +168,22 @@ function MissingDetail() {
           </div>
         </div>
 
-        {(p.medical_conditions.length > 0 || p.special_needs.length > 0 || p.cognitive_impairment) && (
+        {(p.medical_conditions.length > 0 ||
+          p.special_needs.length > 0 ||
+          p.cognitive_impairment) && (
           <section aria-labelledby="vuln" className="space-y-3">
-            <h2 id="vuln" className="text-lg font-semibold">Vulnerability &amp; medical</h2>
+            <h2 id="vuln" className="text-lg font-semibold">
+              Vulnerability &amp; medical
+            </h2>
             <div className="space-y-2 rounded-md border-l-4 border-l-destructive bg-destructive/5 p-4">
               {p.medical_conditions.length > 0 && (
                 <Row label="Medical conditions" value={p.medical_conditions.join(", ")} />
               )}
               {p.cognitive_impairment && (
-                <Row label="Cognitive impairment" value="Yes — may be confused or unable to ask for help" />
+                <Row
+                  label="Cognitive impairment"
+                  value="Yes — may be confused or unable to ask for help"
+                />
               )}
               {p.special_needs.length > 0 && (
                 <Row label="Special needs" value={p.special_needs.join(", ")} />
@@ -173,15 +193,21 @@ function MissingDetail() {
         )}
 
         <section aria-labelledby="circ" className="space-y-3">
-          <h2 id="circ" className="text-lg font-semibold">Disappearance circumstances</h2>
+          <h2 id="circ" className="text-lg font-semibold">
+            Disappearance circumstances
+          </h2>
           <Row label="Type" value={CIRCUMSTANCE_LABELS[p.circumstances]} />
           {p.circumstances_narrative && (
-            <p className="text-sm leading-relaxed text-muted-foreground">{p.circumstances_narrative}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {p.circumstances_narrative}
+            </p>
           )}
         </section>
 
         <section aria-labelledby="last-seen" className="space-y-3">
-          <h2 id="last-seen" className="text-lg font-semibold">Last seen</h2>
+          <h2 id="last-seen" className="text-lg font-semibold">
+            Last seen
+          </h2>
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Row
               label="Location"
@@ -198,15 +224,15 @@ function MissingDetail() {
               value={p.last_seen_at ? new Date(p.last_seen_at).toLocaleString() : null}
             />
             <Row label="Wearing" value={p.last_seen_clothing} />
-            {p.possessions.length > 0 && (
-              <Row label="Carrying" value={p.possessions.join(", ")} />
-            )}
+            {p.possessions.length > 0 && <Row label="Carrying" value={p.possessions.join(", ")} />}
           </dl>
         </section>
 
         {(p.family_contact_name || p.family_contact_phone) && (
           <section aria-labelledby="contact" className="space-y-3">
-            <h2 id="contact" className="text-lg font-semibold">Family contact</h2>
+            <h2 id="contact" className="text-lg font-semibold">
+              Family contact
+            </h2>
             <Card className="border-primary/30 bg-primary/5 p-5">
               <p className="flex items-center gap-2 text-sm font-medium text-primary">
                 <Heart className="size-4" /> If you have any information, please contact:
@@ -224,22 +250,24 @@ function MissingDetail() {
               )}
               <p className="mt-3 text-xs text-muted-foreground">
                 You can also contact SAPS on{" "}
-                <a href="tel:10111" className="font-medium underline">10111</a>.
-                Any information, no matter how small, could help bring {p.full_name.split(" ")[0]} home.
+                <a href="tel:10111" className="font-medium underline">
+                  10111
+                </a>
+                . Any information, no matter how small, could help bring {p.full_name.split(" ")[0]}{" "}
+                home.
               </p>
             </Card>
           </section>
         )}
 
         <div className="sticky bottom-20 z-10 -mx-4 flex flex-col gap-2 border-t bg-background/95 p-4 backdrop-blur sm:static sm:mx-0 sm:flex-row sm:border-0 sm:bg-transparent sm:p-0 md:bottom-0">
-          <Button asChild className="h-12 flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-            <Link
-              to="/report"
-              search={{ caseType: "missing", caseId: p.id }}
-              aria-label={`Report sighting of ${p.full_name}`}
-            >
-              Report sighting
-            </Link>
+          <Button
+            type="button"
+            onClick={() => openReportFlow("missing", p.id)}
+            className="h-12 flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+            aria-label={`Report sighting of ${p.full_name}`}
+          >
+            Report sighting
           </Button>
           <ShareButton title={p.full_name} text={`Missing: ${p.full_name}`} />
         </div>

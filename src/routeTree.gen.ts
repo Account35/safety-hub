@@ -10,12 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ChatsRouteImport } from './routes/chats'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
+import { Route as ProfileRewardsRouteImport } from './routes/profile.rewards'
+import { Route as ProfileReportsRouteImport } from './routes/profile.reports'
+import { Route as ProfilePrivacySecurityRouteImport } from './routes/profile.privacy-security'
+import { Route as ProfileNotificationsRouteImport } from './routes/profile.notifications'
 import { Route as ChatsIdRouteImport } from './routes/chats.$id'
 import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as CasesMissingRouteImport } from './routes/cases.missing'
@@ -26,6 +31,11 @@ import { Route as CasesMissingIdRouteImport } from './routes/cases.missing.$id'
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatsRoute = ChatsRouteImport.update({
@@ -56,6 +66,26 @@ const CasesIndexRoute = CasesIndexRouteImport.update({
   id: '/cases/',
   path: '/cases/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRewardsRoute = ProfileRewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfileReportsRoute = ProfileReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfilePrivacySecurityRoute = ProfilePrivacySecurityRouteImport.update({
+  id: '/privacy-security',
+  path: '/privacy-security',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfileNotificationsRoute = ProfileNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => ProfileRoute,
 } as any)
 const ChatsIdRoute = ChatsIdRouteImport.update({
   id: '/$id',
@@ -93,11 +123,16 @@ export interface FileRoutesByFullPath {
   '/activity': typeof ActivityRoute
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRouteWithChildren
+  '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/chats/$id': typeof ChatsIdRoute
+  '/profile/notifications': typeof ProfileNotificationsRoute
+  '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
+  '/profile/reports': typeof ProfileReportsRoute
+  '/profile/rewards': typeof ProfileRewardsRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -107,11 +142,16 @@ export interface FileRoutesByTo {
   '/activity': typeof ActivityRoute
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRouteWithChildren
+  '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/chats/$id': typeof ChatsIdRoute
+  '/profile/notifications': typeof ProfileNotificationsRoute
+  '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
+  '/profile/reports': typeof ProfileReportsRoute
+  '/profile/rewards': typeof ProfileRewardsRoute
   '/cases': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -123,11 +163,16 @@ export interface FileRoutesById {
   '/activity': typeof ActivityRoute
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRouteWithChildren
+  '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/chats/$id': typeof ChatsIdRoute
+  '/profile/notifications': typeof ProfileNotificationsRoute
+  '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
+  '/profile/reports': typeof ProfileReportsRoute
+  '/profile/rewards': typeof ProfileRewardsRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -139,11 +184,16 @@ export interface FileRouteTypes {
     | '/activity'
     | '/auth'
     | '/chats'
+    | '/profile'
     | '/report'
     | '/dashboard'
     | '/cases/missing'
     | '/cases/wanted'
     | '/chats/$id'
+    | '/profile/notifications'
+    | '/profile/privacy-security'
+    | '/profile/reports'
+    | '/profile/rewards'
     | '/cases/'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -153,11 +203,16 @@ export interface FileRouteTypes {
     | '/activity'
     | '/auth'
     | '/chats'
+    | '/profile'
     | '/report'
     | '/dashboard'
     | '/cases/missing'
     | '/cases/wanted'
     | '/chats/$id'
+    | '/profile/notifications'
+    | '/profile/privacy-security'
+    | '/profile/reports'
+    | '/profile/rewards'
     | '/cases'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -168,11 +223,16 @@ export interface FileRouteTypes {
     | '/activity'
     | '/auth'
     | '/chats'
+    | '/profile'
     | '/report'
     | '/_authenticated/dashboard'
     | '/cases/missing'
     | '/cases/wanted'
     | '/chats/$id'
+    | '/profile/notifications'
+    | '/profile/privacy-security'
+    | '/profile/reports'
+    | '/profile/rewards'
     | '/cases/'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -184,6 +244,7 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AuthRoute: typeof AuthRoute
   ChatsRoute: typeof ChatsRouteWithChildren
+  ProfileRoute: typeof ProfileRouteWithChildren
   ReportRoute: typeof ReportRoute
   CasesMissingRoute: typeof CasesMissingRouteWithChildren
   CasesWantedRoute: typeof CasesWantedRouteWithChildren
@@ -197,6 +258,13 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chats': {
@@ -240,6 +308,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/cases/'
       preLoaderRoute: typeof CasesIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/profile/rewards': {
+      id: '/profile/rewards'
+      path: '/rewards'
+      fullPath: '/profile/rewards'
+      preLoaderRoute: typeof ProfileRewardsRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/reports': {
+      id: '/profile/reports'
+      path: '/reports'
+      fullPath: '/profile/reports'
+      preLoaderRoute: typeof ProfileReportsRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/privacy-security': {
+      id: '/profile/privacy-security'
+      path: '/privacy-security'
+      fullPath: '/profile/privacy-security'
+      preLoaderRoute: typeof ProfilePrivacySecurityRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/notifications': {
+      id: '/profile/notifications'
+      path: '/notifications'
+      fullPath: '/profile/notifications'
+      preLoaderRoute: typeof ProfileNotificationsRouteImport
+      parentRoute: typeof ProfileRoute
     }
     '/chats/$id': {
       id: '/chats/$id'
@@ -307,6 +403,23 @@ const ChatsRouteChildren: ChatsRouteChildren = {
 
 const ChatsRouteWithChildren = ChatsRoute._addFileChildren(ChatsRouteChildren)
 
+interface ProfileRouteChildren {
+  ProfileNotificationsRoute: typeof ProfileNotificationsRoute
+  ProfilePrivacySecurityRoute: typeof ProfilePrivacySecurityRoute
+  ProfileReportsRoute: typeof ProfileReportsRoute
+  ProfileRewardsRoute: typeof ProfileRewardsRoute
+}
+
+const ProfileRouteChildren: ProfileRouteChildren = {
+  ProfileNotificationsRoute: ProfileNotificationsRoute,
+  ProfilePrivacySecurityRoute: ProfilePrivacySecurityRoute,
+  ProfileReportsRoute: ProfileReportsRoute,
+  ProfileRewardsRoute: ProfileRewardsRoute,
+}
+
+const ProfileRouteWithChildren =
+  ProfileRoute._addFileChildren(ProfileRouteChildren)
+
 interface CasesMissingRouteChildren {
   CasesMissingIdRoute: typeof CasesMissingIdRoute
 }
@@ -337,6 +450,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AuthRoute: AuthRoute,
   ChatsRoute: ChatsRouteWithChildren,
+  ProfileRoute: ProfileRouteWithChildren,
   ReportRoute: ReportRoute,
   CasesMissingRoute: CasesMissingRouteWithChildren,
   CasesWantedRoute: CasesWantedRouteWithChildren,

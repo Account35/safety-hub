@@ -15,8 +15,7 @@ export const t = {
   },
   auth: {
     welcomeTitle: "Help Keep Your Community Safe",
-    welcomeSubtitle:
-      "Browse cases, report safely, and help SAPS protect your community.",
+    welcomeSubtitle: "Browse cases, report safely, and help SAPS protect your community.",
     browseGuest: "Browse Safety Information",
     createAccount: "Create Account",
     signInTab: "Sign in",
@@ -59,6 +58,5 @@ export const t = {
       community: "Community",
       communityDesc: "Leaderboard & achievements",
     },
-    comingSoon: "Coming in a later phase",
   },
 } as const;

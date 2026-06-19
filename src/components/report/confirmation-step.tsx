@@ -65,11 +65,17 @@ export function ConfirmationStep({
 
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
         <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-          <Link to="/cases">Return to Cases</Link>
+          <Link to="/cases">Browse More Cases</Link>
         </Button>
-        <Button asChild variant="outline">
-          <Link to="/cases">Report Another Case</Link>
-        </Button>
+        {isAuthenticated ? (
+          <Button asChild variant="outline">
+            <Link to="/profile/reports">View My Reports</Link>
+          </Button>
+        ) : (
+          <Button asChild variant="outline">
+            <Link to="/cases">Report Another Case</Link>
+          </Button>
+        )}
       </div>
     </div>
   );

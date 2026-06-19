@@ -8,14 +8,13 @@ import {
   Search,
   UserSearch,
   FileText,
-  Trophy,
-  Users,
+  Gift,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -152,10 +151,9 @@ interface ActionCardProps {
   title: string;
   description: string;
   tone?: "primary" | "accent" | "destructive";
-  badge?: string;
 }
 
-function ActionCard({ to, icon: Icon, title, description, tone = "primary", badge }: ActionCardProps) {
+function ActionCard({ to, icon: Icon, title, description, tone = "primary" }: ActionCardProps) {
   const toneClass =
     tone === "destructive"
       ? "bg-destructive/10 text-destructive"
@@ -167,15 +165,12 @@ function ActionCard({ to, icon: Icon, title, description, tone = "primary", badg
     <Link to={to} className="group block focus:outline-none">
       <Card className="h-full transition-all group-hover:-translate-y-0.5 group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-accent">
         <CardContent className="flex h-full flex-col gap-3 p-5">
-          <div className="flex items-start justify-between">
-            <span
-              aria-hidden="true"
-              className={`grid size-11 place-items-center rounded-md ${toneClass}`}
-            >
-              <Icon className="size-5" />
-            </span>
-            {badge && <Badge variant="secondary">{badge}</Badge>}
-          </div>
+          <span
+            aria-hidden="true"
+            className={`grid size-11 place-items-center rounded-md ${toneClass}`}
+          >
+            <Icon className="size-5" />
+          </span>
           <div>
             <h3 className="text-lg font-semibold">{title}</h3>
             <p className="mt-1 text-sm text-muted-foreground">{description}</p>
@@ -214,31 +209,27 @@ export function ActionGrid() {
           title={t.dashboard.actions.report}
           description={t.dashboard.actions.reportDesc}
           tone="accent"
-          badge="Soon"
         />
         {user && (
           <>
             <ActionCard
-              to="/activity"
+              to="/profile/reports"
               icon={FileText}
               title={t.dashboard.actions.myReports}
               description={t.dashboard.actions.myReportsDesc}
-              badge="Soon"
             />
             <ActionCard
-              to="/activity"
-              icon={Trophy}
+              to="/profile/rewards"
+              icon={Gift}
               title={t.dashboard.actions.rewards}
               description={t.dashboard.actions.rewardsDesc}
               tone="accent"
-              badge="Soon"
             />
             <ActionCard
-              to="/activity"
-              icon={Users}
-              title={t.dashboard.actions.community}
-              description={t.dashboard.actions.communityDesc}
-              badge="Soon"
+              to="/chats"
+              icon={MessageSquare}
+              title="My Conversations"
+              description="View responses from SAPS officers"
             />
           </>
         )}

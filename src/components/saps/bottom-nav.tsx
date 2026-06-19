@@ -10,7 +10,7 @@ const items = [
   { to: "/cases", label: t.nav.cases, icon: Search },
   { to: "/report", label: t.nav.report, icon: AlertTriangle },
   { to: "/activity", label: t.nav.activity, icon: Activity },
-  { to: "/dashboard", label: t.nav.profile, icon: User },
+  { to: "/profile", label: t.nav.profile, icon: User },
 ] as const;
 
 export function BottomNav() {

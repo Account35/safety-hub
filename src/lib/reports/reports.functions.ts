@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import type { Database } from "@/integrations/supabase/types";
 
 const photoSchema = z.object({
   path: z.string().min(1).max(500),
@@ -29,6 +31,44 @@ const submitSchema = z.object({
   accuracyConfirmed: z.literal(true),
   voluntaryConfirmed: z.literal(true),
 });
+
+function isServiceRoleKey(key: string): boolean {
+  try {
+    const payload = JSON.parse(atob(key.split(".")[1]!)) as { role?: string };
+    return payload.role === "service_role";
+  } catch {
+    return false;
+  }
+}
+
+/** Client for report inserts — uses service role when available, otherwise RLS-aware user/anon client. */
+async function getReportInsertClient(
+  authHeader: string | null | undefined,
+): Promise<SupabaseClient<Database>> {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (serviceRoleKey && isServiceRoleKey(serviceRoleKey)) {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    return supabaseAdmin;
+  }
+
+  const url = process.env.SUPABASE_URL;
+  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !publishableKey) {
+    throw new Error("Missing Supabase environment variables.");
+  }
+
+  const token = authHeader?.toLowerCase().startsWith("bearer ") ? authHeader.slice(7) : null;
+  if (token) {
+    return createClient<Database>(url, publishableKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+    });
+  }
+
+  return createClient<Database>(url, publishableKey, {
+    auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+  });
+}
 
 function generateReportId(): string {
   const now = new Date();
@@ -62,13 +102,14 @@ export const submitReport = createServerFn({ method: "POST" })
     if (caseErr) throw new Error(caseErr.message);
     if (!caseRow) throw new Error("Case not found or inactive.");
 
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
+    const authHeader = getRequestHeader("authorization");
+
     // Resolve authenticated user id (optional).
     let reporterId: string | null = null;
     try {
-      const { getRequestHeader } = await import("@tanstack/react-start/server");
-      const auth = getRequestHeader("authorization");
-      if (auth?.toLowerCase().startsWith("bearer ")) {
-        const token = auth.slice(7);
+      if (authHeader?.toLowerCase().startsWith("bearer ")) {
+        const token = authHeader.slice(7);
         const { data: u } = await supabaseAdmin.auth.getUser(token);
         reporterId = u.user?.id ?? null;
       }
@@ -76,10 +117,12 @@ export const submitReport = createServerFn({ method: "POST" })
       reporterId = null;
     }
 
+    const insertClient = await getReportInsertClient(authHeader);
+
     // Retry on report_id collision (very unlikely).
     for (let attempt = 0; attempt < 3; attempt++) {
       const reportId = generateReportId();
-      const { error } = await supabaseAdmin.from("reports").insert({
+      const { error } = await insertClient.from("reports").insert({
         report_id: reportId,
         case_id: data.caseId,
         case_type: data.caseType,

@@ -35,9 +35,9 @@ export function WantedCard({ item }: { item: WantedListItem }) {
     .join(" · ");
   return (
     <Link
-      to="/cases/wanted/$id"
-      params={{ id: item.id }}
-      aria-label={`Wanted person ${item.full_name}, ${item.crime_category ?? "case details"}`}
+      to="/report"
+      search={{ caseType: "wanted", caseId: item.id }}
+      aria-label={`Report sighting of wanted person ${item.full_name}`}
       className="group block focus:outline-none"
     >
       <Card className="h-full overflow-hidden border-l-4 border-l-destructive transition-shadow group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-accent">
@@ -79,9 +79,9 @@ export function MissingCard({ item }: { item: MissingListItem }) {
   const meta = timeMissingLabel(item.last_seen_at);
   return (
     <Link
-      to="/cases/missing/$id"
-      params={{ id: item.id }}
-      aria-label={`Missing person ${item.full_name}, ${meta.text}`}
+      to="/report"
+      search={{ caseType: "missing", caseId: item.id }}
+      aria-label={`Report sighting of missing person ${item.full_name}, ${meta.text}`}
       className="group block focus:outline-none"
     >
       <Card className="relative h-full overflow-hidden border-l-4 border-l-primary transition-shadow group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-accent">

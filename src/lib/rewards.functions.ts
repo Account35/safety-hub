@@ -34,7 +34,8 @@ export interface RewardClaim {
 
 // ── Helper ─────────────────────────────────────────────────────────────────
 
-async function getAdminAndUser() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getAdminAndUser(): Promise<{ supabaseAdmin: any; user: { id: string; email?: string | null } }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { getRequestHeader } = await import("@tanstack/react-start/server");
   const auth = getRequestHeader("authorization") ?? "";
@@ -42,30 +43,10 @@ async function getAdminAndUser() {
   if (!token) throw new Error("Unauthorized");
   const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
   if (error || !user) throw new Error("Unauthorized");
-  // Cast to loose type: some referenced tables (reward_eligibility, reward_claims)
-  // are not yet in the generated types.
-  return { supabaseAdmin: supabaseAdmin as unknown as AnySupabase, user };
+  // Loosened: some referenced tables (reward_eligibility, reward_claims) do not yet exist in generated types.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return { supabaseAdmin: supabaseAdmin as any, user };
 }
-
-// Loose Supabase client type used only in this file until reward tables exist.
-type AnyQuery = {
-  select: (c?: string) => AnyQuery;
-  update: (v: unknown) => AnyQuery;
-  insert: (v: unknown) => AnyQuery;
-  eq: (c: string, v: unknown) => AnyQuery;
-  lt: (c: string, v: unknown) => AnyQuery;
-  order: (c: string, o?: unknown) => AnyQuery;
-  maybeSingle: () => Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }>;
-} & Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }>;
-type AnySupabase = {
-  from: (t: string) => AnyQuery;
-  auth: {
-    getUser: (t: string) => Promise<{ data: { user: { id: string; email?: string } | null }; error: { message: string } | null }>;
-    admin: {
-      getUserById: (id: string) => Promise<{ data: { user: { email_confirmed_at?: string | null } | null } }>;
-    };
-  };
-};
 
 function generateClaimId(): string {
   const now = new Date();

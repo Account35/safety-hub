@@ -1,84 +1,41 @@
-# Phase 3 — Multi-Channel Reporting System
+## Phase 4 Status
 
-A guided, privacy-first reporting wizard launched from any case detail page. Six steps: safety → methods → text/voice/photo (one or more) → location → preview → confirmation. Reference codes `RPT-YYYY-MMDD-XXXX` feed Phases 4/6/9.
+The Phase 4 chat frontend is already implemented from prior work: conversation list, individual conversation view, message bubbles, delivery indicators, PII scanner, welcome card, privacy modal, close modal, search, export, welcome flow, real-time subscription wiring, and the bottom-nav unread badge are all in place (`src/routes/chats.tsx`, `src/routes/chats.$id.tsx`, `src/components/chat-*`, `src/lib/chat-*`).
 
-## Backend (Lovable Cloud)
+**What's missing:** the `conversations` and `messages` tables don't exist in the database yet. The frontend queries them and fails silently. This is the single blocker to Phase 4 being functional.
 
-Two migrations (approval required):
+## Plan
 
-1. **`reports` table**
-   - `id uuid PK`, `report_id text unique` (RPT-YYYY-MMDD-XXXX)
-   - `case_id uuid`, `case_type text` ('wanted' | 'missing')
-   - `reporter_id uuid` (auth.uid, nullable for guests)
-   - `reporter_anon_code text` (always present — shown to SAPS)
-   - `reporting_methods text[]`, `sighting_date date`, `sighting_time time`
-   - `location_approximate jsonb` (fuzzed lat/lng, 2-decimal), `location_township text`, `location_landmarks text[]`, `location_privacy_level text`
-   - `text_description text`, `companion_description text`, `confidence_level int` (1-5)
-   - `voice_recording_path text`, `photos jsonb` (array of `{path, caption}`)
-   - `safety_acknowledgment bool`, `accuracy_confirmed bool`, `voluntary_confirmed bool`
-   - `status text` default `'submitted'`, `submission_timestamp timestamptz`, timestamps
-   - GRANTs + RLS: `authenticated` can `INSERT` (own user_id or null) and `SELECT` own rows; `anon` can `INSERT` (guest reports, no select); `service_role` full.
+### 1. Create the chat database schema (one migration)
 
-2. **Storage buckets** (private): `report-voice`, `report-photos`
-   - RLS on `storage.objects`: authenticated users can INSERT into their own `report-drafts/{auth.uid}/...` path; service_role full read.
+Add two tables matching the shapes already assumed by `src/lib/chat-types.ts` and `src/lib/chat-data.ts`:
 
-## Server functions (`src/lib/reports/reports.functions.ts`)
+- `public.conversations`
+  - `id uuid pk`, `report_id uuid unique fk → reports`, `case_id uuid`, `case_type text check ('wanted','missing')`, `reporter_id uuid fk → auth.users`, `officer_id uuid null`, `status text check (active|awaiting_reporter|awaiting_officer|closed|archived) default 'active'`, `closure_reason text null`, `created_at`, `updated_at`, `last_activity_at`
+  - Optional cached fields already used by the UI: `case_name text`, `case_photo text` (denormalized snapshot so the reporter card renders without cross-table joins)
+- `public.messages`
+  - `id uuid pk`, `conversation_id uuid fk → conversations on delete cascade`, `sender_type text check ('reporter','officer','system')`, `message_content text not null`, `attachment_reference text null`, `is_deleted boolean default false`, `sent_at`, `delivered_at`, `read_at`
 
-- `createReport` — `requireSupabaseAuth` optional (allow anon via separate variant); validates full payload with Zod, generates `report_id`, inserts row, returns reference.
-- `getCaseSummary({ caseType, caseId })` — public; returns `{ name, photo, type }` for the persistent header (admin client, safe columns).
+Supporting objects in the same migration:
+- `GRANT SELECT, INSERT, UPDATE ON public.conversations TO authenticated;` + `GRANT ALL ... TO service_role;` (no anon; every policy scopes to `auth.uid()`)
+- `GRANT SELECT, INSERT, UPDATE ON public.messages TO authenticated;` + `GRANT ALL ... TO service_role;`
+- Enable RLS on both.
+- Policies:
+  - conversations: reporter can `SELECT` and `UPDATE` (for close) their own rows (`reporter_id = auth.uid()`); no client INSERT (officer/service-role only, so no INSERT policy for authenticated).
+  - messages: reporter can `SELECT` messages whose conversation they own; reporter can `INSERT` with `sender_type = 'reporter'` into their own conversations and only when conversation status is `active`/`awaiting_reporter`/`awaiting_officer`; reporter can `UPDATE` officer messages' `read_at` on their own conversations (used by `markMessagesRead`).
+- Trigger: after `INSERT` on `messages`, bump `conversations.last_activity_at = now()` and flip `status` toward `awaiting_officer` when the sender is a reporter.
+- `updated_at` trigger reusing existing `public.set_updated_at()`.
+- Add both tables to `supabase_realtime` publication and set `REPLICA IDENTITY FULL` so the existing `supabase.channel(...).on('postgres_changes', ...)` subscriptions in `chat-data.ts` receive updates.
 
-Voice/photo files uploaded directly from browser via `supabase.storage` to a draft folder, then path references attached at submit.
+### 2. Verify end-to-end
 
-## Frontend wizard
+After the migration runs and types regenerate:
+- Confirm `src/routes/chats.tsx` renders the empty state (no rows yet) instead of erroring.
+- Seed one demo conversation + one officer message via the insert tool so the UI can be exercised (reporter must be signed in; use the currently-signed-in user's id).
 
-Route: `src/routes/report.tsx` replaces existing stub. Uses URL search params `caseType`, `caseId` (already wired from Phase 2) plus `step` for deep linking. Draft state kept in `sessionStorage` keyed by `{caseType}:{caseId}` via a `useReportDraft` hook.
+### Technical notes
 
-```
-src/routes/report.tsx                 # Wizard shell, step routing
-src/lib/reports/
-  draft.ts                            # session-storage hook + types
-  reference.ts                        # RPT-YYYY-MMDD-XXXX generator
-  reports.functions.ts                # server fn
-  schema.ts                           # Zod schemas per step
-  fuzz.ts                             # GPS fuzzing
-  exif-strip.ts                       # canvas re-encode → strips EXIF
-  townships.ts                        # SA township list
-src/components/report/
-  case-context-header.tsx
-  safety-modal.tsx                    # wanted (red) / missing (navy) variants
-  step-indicator.tsx
-  method-selection.tsx
-  text-step.tsx                       # date/time, description + chips, companion, confidence
-  voice-step.tsx                      # MediaRecorder, 3 min cap, waveform, playback
-  photo-step.tsx                      # wanted warning, EXIF strip, captions, basic edit (crop/rotate/blur)
-  location-step.tsx                   # 3 cards, fuzz, privacy tier, summary
-  preview-step.tsx                    # collapsible sections w/ edit links, 2 confirms
-  confirmation-step.tsx               # ref number, copy, CTAs, draft cleanup
-  draft-resume-banner.tsx             # surfaced on case detail pages
-```
+- No frontend code changes are required — the existing components already match this schema. If regenerated `types.ts` surfaces a field mismatch, we adjust that single spot; nothing structural.
+- Phase-4 items explicitly out of scope for this pass (feedback prompt after closure, per-conversation notification preferences panel, service-worker push notifications) are polish and can be added incrementally once the base chat is confirmed working against real data.
 
-Case detail pages (`cases.wanted.$id.tsx`, `cases.missing.$id.tsx`) get the resume banner when a draft for that case exists in sessionStorage. The existing "Report Sighting" button already links to `/report` with the search params.
-
-## Key behaviors
-
-- **Safety modal**: mandatory checkbox before any step renders. Variant by case_type.
-- **EXIF stripping**: re-render image through `<canvas>` and re-encode JPEG/PNG before upload — guarantees no EXIF/GPS survives. Show "Privacy protected ✓".
-- **Voice**: `MediaRecorder` API, `audio/webm`, max 3:00, pulsing record indicator, blob stored in sessionStorage as object URL until submit.
-- **GPS fuzz**: random ±500m offset → round to 2 decimals; never store raw. Reverse geocoding skipped (no API) — derive township from nearest match in `townships.ts` via Haversine, fallback to "Approximate area".
-- **Submission**: upload voice + photos to storage with paths `drafts/{anonCode}/{report_id}/...`, then call `createReport` with paths. Generate `reporter_anon_code` = `ANON-{6 hex}` (stable per session for guests, derived from user id hash for auth users).
-- **Reference number** persisted in `localStorage` under `report_refs[]` for guest tracking.
-
-## Design
-
-Reuses Phase 1 SAPS tokens (`saps-navy`, `saps-gold`, `alert-red`). All controls ≥ 44×44px. Step indicator: numbered circles, gold filled = done, gold outline = current. Wizard is full-screen on mobile, centered max-w-2xl modal-style card on desktop.
-
-## Out of scope (later phases)
-
-Officer review, chat, rewards, AI scoring, campaigns, report history page.
-
-## Approval needed
-
-1. Migration: `reports` table + GRANTs + RLS.
-2. Storage buckets `report-voice` and `report-photos` (private) + object policies.
-
-Want me to proceed with this plan?
+Ready to execute step 1 as soon as you approve.

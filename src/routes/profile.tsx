@@ -79,8 +79,9 @@ function AuthenticatedProfile() {
     getMyRewards().then((r) => setEligibleRewards(r.filter((e) => e.eligibility_status === "eligible").length)).catch(() => {});
   }, []);
 
-  async function save(field: Partial<Parameters<typeof updateProfile>[0]>) {
-    await updateProfile(field as Parameters<typeof updateProfile>[0]);
+  async function save(field: Record<string, unknown>) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await updateProfile({ data: field } as any);
     const refreshed = await getProfile();
     setProfile(refreshed);
   }

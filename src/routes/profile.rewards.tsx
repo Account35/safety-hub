@@ -77,11 +77,13 @@ function RewardsPage() {
   async function handleClaimSubmit(reward: RewardEligibility, identity: Identity, payment: Payment) {
     try {
       const { claim_id } = await submitRewardClaim({
-        report_id: reward.report_id,
-        full_name: identity.full_name,
-        id_number: identity.id_number,
-        payment_method_type: payment.method,
-        payment_details: payment.details,
+        data: {
+          report_id: reward.report_id,
+          full_name: identity.full_name,
+          id_number: identity.id_number,
+          payment_method_type: payment.method,
+          payment_details: payment.details,
+        },
       });
       // Refresh rewards
       const updated = await getMyRewards();

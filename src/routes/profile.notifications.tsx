@@ -39,7 +39,7 @@ function NotificationsPage() {
       setTimeout(() => setLiveAnnounce(""), 3000);
     }
     try {
-      await updateNotificationPrefs(patch);
+      await updateNotificationPrefs({ data: patch });
       toast.success("Settings saved");
     } catch {
       toast.error("Failed to save");

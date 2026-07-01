@@ -34,7 +34,8 @@ export interface RewardClaim {
 
 // ── Helper ─────────────────────────────────────────────────────────────────
 
-async function getAdminAndUser() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getAdminAndUser(): Promise<{ supabaseAdmin: any; user: { id: string; email?: string | null } }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { getRequestHeader } = await import("@tanstack/react-start/server");
   const auth = getRequestHeader("authorization") ?? "";
@@ -42,7 +43,9 @@ async function getAdminAndUser() {
   if (!token) throw new Error("Unauthorized");
   const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
   if (error || !user) throw new Error("Unauthorized");
-  return { supabaseAdmin, user };
+  // Loosened: some referenced tables (reward_eligibility, reward_claims) do not yet exist in generated types.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return { supabaseAdmin: supabaseAdmin as any, user };
 }
 
 function generateClaimId(): string {
@@ -80,7 +83,8 @@ export const getMyRewards = createServerFn({ method: "GET" }).handler(
     if (error) throw new Error(error.message);
 
     return Promise.all(
-      (rows ?? []).map(async (r) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (rows ?? []).map(async (r: any) => {
         // Case enrichment (same pattern as Phase 5)
         let case_name: string | undefined;
         let case_photo: string | null | undefined;

@@ -31,7 +31,7 @@ function ReportsHistoryPage() {
   useEffect(() => {
     if (!user) return;
     setLoading(true);
-    getMyReports({ page, caseType: filter })
+    getMyReports({ data: { page, caseType: filter } })
       .then(({ items: newItems, total: t }) => {
         setItems(p => page === 1 ? newItems : [...p, ...newItems]);
         setTotal(t);

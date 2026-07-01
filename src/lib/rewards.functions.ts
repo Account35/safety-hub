@@ -83,7 +83,8 @@ export const getMyRewards = createServerFn({ method: "GET" }).handler(
     if (error) throw new Error(error.message);
 
     return Promise.all(
-      (rows ?? []).map(async (r) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (rows ?? []).map(async (r: any) => {
         // Case enrichment (same pattern as Phase 5)
         let case_name: string | undefined;
         let case_photo: string | null | undefined;

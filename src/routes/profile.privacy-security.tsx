@@ -45,12 +45,12 @@ function PrivacySecurityPage() {
     if (!privacy) return;
     const next = { ...privacy, ...patch };
     setPrivacy(next);
-    await updatePrivacySettings(patch);
+    await updatePrivacySettings({ data: patch });
     toast.success("Settings saved");
   }
 
   async function handlePasswordChange(current: string, next: string) {
-    await changePassword({ currentPassword: current, newPassword: next });
+    await changePassword({ data: { currentPassword: current, newPassword: next } });
     toast.success("Password changed successfully");
     setShowPwForm(false);
   }
@@ -61,7 +61,7 @@ function PrivacySecurityPage() {
   }
 
   async function handleDeleteAccount() {
-    await deleteAccount({ confirmation: "DELETE" });
+    await deleteAccount({ data: { confirmation: "DELETE" } });
     await signOut();
     toast.success("Your account has been deleted. Thank you for contributing to community safety.");
     navigate({ to: "/" });

@@ -105,9 +105,7 @@ function ConversationPage() {
       setConversation(updated);
     });
 
-    msgSub.on("system", (status) => {
-      setConnected(status.status === "SUBSCRIBED");
-    });
+    // Note: connection state derived from subscribe callback in chat-data; kept as-is.
 
     return () => {
       msgSub.unsubscribe();

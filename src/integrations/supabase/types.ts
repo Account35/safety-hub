@@ -14,6 +14,109 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversations: {
+        Row: {
+          case_id: string
+          case_name: string | null
+          case_photo: string | null
+          case_type: string
+          closure_reason: string | null
+          created_at: string
+          id: string
+          last_activity_at: string
+          officer_id: string | null
+          report_id: string
+          reporter_anon_code: string
+          reporter_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          case_name?: string | null
+          case_photo?: string | null
+          case_type: string
+          closure_reason?: string | null
+          created_at?: string
+          id?: string
+          last_activity_at?: string
+          officer_id?: string | null
+          report_id: string
+          reporter_anon_code: string
+          reporter_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          case_name?: string | null
+          case_photo?: string | null
+          case_type?: string
+          closure_reason?: string | null
+          created_at?: string
+          id?: string
+          last_activity_at?: string
+          officer_id?: string | null
+          report_id?: string
+          reporter_anon_code?: string
+          reporter_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          attachment_reference: string | null
+          conversation_id: string
+          delivered_at: string | null
+          id: string
+          is_deleted: boolean
+          message_content: string
+          read_at: string | null
+          sender_type: string
+          sent_at: string
+        }
+        Insert: {
+          attachment_reference?: string | null
+          conversation_id: string
+          delivered_at?: string | null
+          id?: string
+          is_deleted?: boolean
+          message_content: string
+          read_at?: string | null
+          sender_type: string
+          sent_at?: string
+        }
+        Update: {
+          attachment_reference?: string | null
+          conversation_id?: string
+          delivered_at?: string | null
+          id?: string
+          is_deleted?: boolean
+          message_content?: string
+          read_at?: string | null
+          sender_type?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       missing_persons: {
         Row: {
           age_at_disappearance: number | null

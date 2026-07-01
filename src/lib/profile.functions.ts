@@ -102,7 +102,7 @@ export const updateProfile = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin, user } = await getAdminAndUser();
-    const { error } = await supabaseAdmin
+    const { error } = await (supabaseAdmin as unknown as { from: (t: string) => { update: (v: unknown) => { eq: (c: string, v: string) => Promise<{ error: { message: string } | null }> } } })
       .from("profiles")
       .update({ ...data, updated_at: new Date().toISOString() })
       .eq("id", user.id);
@@ -188,18 +188,18 @@ export const getMyReports = createServerFn({ method: "POST" })
 export const getNotificationPrefs = createServerFn({ method: "GET" }).handler(
   async (): Promise<NotificationPrefs> => {
     const { supabaseAdmin, user } = await getAdminAndUser();
-    const { data } = await supabaseAdmin
+    const { data } = await (supabaseAdmin as unknown as { from: (t: string) => { select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: Record<string, unknown> | null }> } } } })
       .from("notification_preferences")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle();
     return {
-      new_message_notifications: data?.new_message_notifications ?? true,
-      report_status_notifications: data?.report_status_notifications ?? true,
+      new_message_notifications: (data?.new_message_notifications as boolean | undefined) ?? true,
+      report_status_notifications: (data?.report_status_notifications as boolean | undefined) ?? true,
       delivery_channel: (data?.delivery_channel as NotificationPrefs["delivery_channel"]) ?? "push",
-      quiet_hours_enabled: data?.quiet_hours_enabled ?? false,
-      quiet_hours_start: data?.quiet_hours_start ?? "22:00",
-      quiet_hours_end: data?.quiet_hours_end ?? "07:00",
+      quiet_hours_enabled: (data?.quiet_hours_enabled as boolean | undefined) ?? false,
+      quiet_hours_start: (data?.quiet_hours_start as string | undefined) ?? "22:00",
+      quiet_hours_end: (data?.quiet_hours_end as string | undefined) ?? "07:00",
     };
   }
 );
@@ -217,7 +217,7 @@ export const updateNotificationPrefs = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin, user } = await getAdminAndUser();
-    await supabaseAdmin
+    await (supabaseAdmin as unknown as { from: (t: string) => { upsert: (v: unknown) => Promise<{ error: unknown }> } })
       .from("notification_preferences")
       .upsert({ user_id: user.id, ...data, updated_at: new Date().toISOString() });
     return { ok: true };
@@ -228,14 +228,14 @@ export const updateNotificationPrefs = createServerFn({ method: "POST" })
 export const getPrivacySettings = createServerFn({ method: "GET" }).handler(
   async (): Promise<PrivacySettings> => {
     const { supabaseAdmin, user } = await getAdminAndUser();
-    const { data } = await supabaseAdmin
+    const { data } = await (supabaseAdmin as unknown as { from: (t: string) => { select: (c: string) => { eq: (c: string, v: string) => { maybeSingle: () => Promise<{ data: Record<string, unknown> | null }> } } } })
       .from("privacy_settings")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle();
     return {
       location_sharing_level: (data?.location_sharing_level as PrivacySettings["location_sharing_level"]) ?? "township",
-      data_retention_acknowledged: data?.data_retention_acknowledged ?? false,
+      data_retention_acknowledged: (data?.data_retention_acknowledged as boolean | undefined) ?? false,
     };
   }
 );
@@ -249,7 +249,7 @@ export const updatePrivacySettings = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin, user } = await getAdminAndUser();
-    await supabaseAdmin
+    await (supabaseAdmin as unknown as { from: (t: string) => { upsert: (v: unknown) => Promise<{ error: unknown }> } })
       .from("privacy_settings")
       .upsert({ user_id: user.id, ...data, updated_at: new Date().toISOString() });
     return { ok: true };

@@ -239,16 +239,25 @@ function CaseSelection({
 function ReportWantedCard({ item, onReport }: { item: WantedListItem; onReport: () => void }) {
   return (
     <Card className="overflow-hidden border-l-4 border-l-destructive">
-      <CasePhoto src={item.photos[0]} alt={`Photograph of wanted person ${item.full_name}`} />
-      <CardContent className="space-y-3 p-4">
-        <div>
-          <h2 className="font-display text-lg font-bold leading-tight text-primary">
-            {item.full_name}
-          </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {item.crime_category ?? "Wanted person"} - {formatRelative(item.last_seen_at)}
-          </p>
-        </div>
+      <Link
+        to="/report"
+        search={{ caseType: "wanted", caseId: item.id }}
+        aria-label={`Report sighting of wanted person ${item.full_name}`}
+        className="block focus:outline-none"
+      >
+        <CasePhoto src={item.photos[0]} alt={`Photograph of wanted person ${item.full_name}`} />
+        <CardContent className="space-y-3 p-4">
+          <div>
+            <h2 className="font-display text-lg font-bold leading-tight text-primary">
+              {item.full_name}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {item.crime_category ?? "Wanted person"} - {formatRelative(item.last_seen_at)}
+            </p>
+          </div>
+        </CardContent>
+      </Link>
+      <div className="space-y-2 p-4 pt-0">
         <Button
           type="button"
           onClick={onReport}
@@ -261,7 +270,7 @@ function ReportWantedCard({ item, onReport }: { item: WantedListItem; onReport: 
             View case details
           </Link>
         </Button>
-      </CardContent>
+      </div>
     </Card>
   );
 }
@@ -270,17 +279,26 @@ function ReportMissingCard({ item, onReport }: { item: MissingListItem; onReport
   const meta = timeMissingLabel(item.last_seen_at);
   return (
     <Card className="overflow-hidden border-l-4 border-l-primary">
-      <CasePhoto src={item.photos[0]} alt={`Photograph of missing person ${item.full_name}`} />
-      <CardContent className="space-y-3 p-4">
-        <div>
-          <h2 className="font-display text-lg font-bold leading-tight text-primary">
-            {item.full_name}
-          </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {meta.text}
-            {item.last_seen_location ? ` - ${item.last_seen_location}` : ""}
-          </p>
-        </div>
+      <Link
+        to="/report"
+        search={{ caseType: "missing", caseId: item.id }}
+        aria-label={`Report sighting of missing person ${item.full_name}`}
+        className="block focus:outline-none"
+      >
+        <CasePhoto src={item.photos[0]} alt={`Photograph of missing person ${item.full_name}`} />
+        <CardContent className="space-y-3 p-4">
+          <div>
+            <h2 className="font-display text-lg font-bold leading-tight text-primary">
+              {item.full_name}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {meta.text}
+              {item.last_seen_location ? ` - ${item.last_seen_location}` : ""}
+            </p>
+          </div>
+        </CardContent>
+      </Link>
+      <div className="space-y-2 p-4 pt-0">
         <Button
           type="button"
           onClick={onReport}
@@ -293,7 +311,7 @@ function ReportMissingCard({ item, onReport }: { item: MissingListItem; onReport
             View case details
           </Link>
         </Button>
-      </CardContent>
+      </div>
     </Card>
   );
 }

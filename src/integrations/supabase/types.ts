@@ -220,12 +220,6 @@ export type Database = {
           full_name: string
           id: string
           updated_at: string
-          phone_number: string | null
-          phone_verified: boolean
-          primary_township: string | null
-          language_preference: string
-          avatar_url: string | null
-          last_login_at: string | null
         }
         Insert: {
           area?: string | null
@@ -233,12 +227,6 @@ export type Database = {
           full_name?: string
           id: string
           updated_at?: string
-          phone_number?: string | null
-          phone_verified?: boolean
-          primary_township?: string | null
-          language_preference?: string
-          avatar_url?: string | null
-          last_login_at?: string | null
         }
         Update: {
           area?: string | null
@@ -246,12 +234,6 @@ export type Database = {
           full_name?: string
           id?: string
           updated_at?: string
-          phone_number?: string | null
-          phone_verified?: boolean
-          primary_township?: string | null
-          language_preference?: string
-          avatar_url?: string | null
-          last_login_at?: string | null
         }
         Relationships: []
       }
@@ -462,93 +444,6 @@ export type Database = {
         }
         Relationships: []
       }
-      reward_eligibility: {
-        Row: {
-          id: string
-          report_id: string
-          reporter_id: string | null
-          case_id: string
-          case_type: string
-          reward_amount: number
-          eligibility_status: Database["public"]["Enums"]["eligibility_status"]
-          eligibility_date: string
-          claim_deadline: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          report_id: string
-          reporter_id?: string | null
-          case_id: string
-          case_type: string
-          reward_amount: number
-          eligibility_status?: Database["public"]["Enums"]["eligibility_status"]
-          eligibility_date?: string
-          claim_deadline?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          report_id?: string
-          reporter_id?: string | null
-          case_id?: string
-          case_type?: string
-          reward_amount?: number
-          eligibility_status?: Database["public"]["Enums"]["eligibility_status"]
-          eligibility_date?: string
-          claim_deadline?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      reward_claims: {
-        Row: {
-          id: string
-          claim_id: string
-          report_id: string
-          user_id: string
-          identity_confirmation: Json
-          payment_method_type: Database["public"]["Enums"]["payment_method_type"]
-          payment_details: Json
-          claim_status: Database["public"]["Enums"]["claim_status"]
-          rejection_reason: string | null
-          submitted_at: string
-          updated_at: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          claim_id: string
-          report_id: string
-          user_id: string
-          identity_confirmation: Json
-          payment_method_type: Database["public"]["Enums"]["payment_method_type"]
-          payment_details?: Json
-          claim_status?: Database["public"]["Enums"]["claim_status"]
-          rejection_reason?: string | null
-          submitted_at?: string
-          updated_at?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          claim_id?: string
-          report_id?: string
-          user_id?: string
-          identity_confirmation?: Json
-          payment_method_type?: Database["public"]["Enums"]["payment_method_type"]
-          payment_details?: Json
-          claim_status?: Database["public"]["Enums"]["claim_status"]
-          rejection_reason?: string | null
-          submitted_at?: string
-          updated_at?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -579,9 +474,6 @@ export type Database = {
         | "endangered"
         | "medical"
         | "unknown"
-      eligibility_status: "eligible" | "claimed" | "paid" | "expired"
-      claim_status: "submitted" | "verification_pending" | "approved" | "paid" | "rejected"
-      payment_method_type: "bank_transfer" | "mobile_money" | "cash_pickup"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -727,9 +619,6 @@ export const Constants = {
         "medical",
         "unknown",
       ],
-      eligibility_status: ["eligible", "claimed", "paid", "expired"],
-      claim_status: ["submitted", "verification_pending", "approved", "paid", "rejected"],
-      payment_method_type: ["bank_transfer", "mobile_money", "cash_pickup"],
     },
   },
 } as const

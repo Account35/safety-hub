@@ -75,16 +75,27 @@ function AuthenticatedProfile() {
   const [eligibleRewards, setEligibleRewards] = useState(0);
 
   useEffect(() => {
-    getProfile().then(setProfile).catch(() => {}).finally(() => setLoading(false));
-    getMyRewards().then((r) => setEligibleRewards(r.filter((e) => e.eligibility_status === "eligible").length)).catch(() => {});
+    setLoading(true);
+    Promise.all([getProfile(), getMyRewards()])
+      .then(([loadedProfile, rewards]) => {
+        setProfile(loadedProfile);
+        setEligibleRewards(rewards.filter((e) => e.eligibility_status === "eligible").length);
+      })
+      .catch((err: unknown) => {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load profile or rewards", err);
+        toast.error(err instanceof Error ? err.message : "Failed to load profile data");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   async function save(field: Record<string, unknown>) {
+    const payload = Object.fromEntries(Object.entries(field).filter(([, value]) => value !== undefined));
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await updateProfile({ data: field } as any);
+      await updateProfile({ data: payload });
       const refreshed = await getProfile();
       setProfile(refreshed);
+      toast.success("Profile updated successfully");
     } catch (err: unknown) {
       // Surface the error for easier debugging and show a toast to the user
       // eslint-disable-next-line no-console

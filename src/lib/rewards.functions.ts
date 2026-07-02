@@ -48,6 +48,15 @@ async function getAdminAndUser(): Promise<{ supabaseAdmin: any; user: { id: stri
   return { supabaseAdmin: supabaseAdmin as any, user };
 }
 
+function getRandomBytes(size: number) {
+  const globalCrypto = globalThis.crypto as { getRandomValues?: (arr: Uint8Array) => Uint8Array; randomFillSync?: (arr: Uint8Array) => Uint8Array } | undefined;
+  if (globalCrypto?.getRandomValues) return globalCrypto.getRandomValues(new Uint8Array(size));
+  if (globalCrypto?.randomFillSync) return globalCrypto.randomFillSync(new Uint8Array(size));
+  const arr = new Uint8Array(size);
+  for (let i = 0; i < size; i++) arr[i] = Math.floor(Math.random() * 256);
+  return arr;
+}
+
 function generateClaimId(): string {
   const now = new Date();
   const y = now.getFullYear();
@@ -55,8 +64,7 @@ function generateClaimId(): string {
   const d = String(now.getDate()).padStart(2, "0");
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let suffix = "";
-  const arr = new Uint8Array(4);
-  crypto.getRandomValues(arr);
+  const arr = getRandomBytes(4);
   for (let i = 0; i < 4; i++) suffix += alphabet[arr[i] % alphabet.length];
   return `CLM-${y}-${m}${d}-${suffix}`;
 }
@@ -72,19 +80,29 @@ export const getMyRewards = createServerFn({ method: "GET" }).handler(
     const db = supabaseAdmin as any;
 
     // Auto-expire overdue eligibility records
-    await db
-      .from("reward_eligibility")
-      .update({ eligibility_status: "expired" })
-      .eq("reporter_id", user.id)
-      .eq("eligibility_status", "eligible")
-      .lt("claim_deadline", new Date().toISOString());
+    try {
+      await db
+        .from("reward_eligibility")
+        .update({ eligibility_status: "expired" })
+        .eq("reporter_id", user.id)
+        .eq("eligibility_status", "eligible")
+        .lt("claim_deadline", new Date().toISOString());
+    } catch (error) {
+      // Reward tables may not yet exist in some environments.
+      // eslint-disable-next-line no-console
+      console.warn("Reward eligibility expiry update skipped", error);
+    }
 
     const { data: rows, error } = await db
       .from("reward_eligibility")
       .select("*")
       .eq("reporter_id", user.id)
       .order("eligibility_date", { ascending: false });
-    if (error) throw new Error(error.message);
+    if (error) {
+      // eslint-disable-next-line no-console
+      console.warn("Failed to load reward eligibility", error);
+      return [];
+    }
 
     return Promise.all(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -105,11 +123,17 @@ export const getMyRewards = createServerFn({ method: "GET" }).handler(
         const { data: conv } = await supabaseAdmin
           .from("conversations").select("id").eq("report_id", r.report_id).maybeSingle();
 
-        const { data: claim } = await db
-          .from("reward_claims")
-          .select("id, claim_id, report_id, claim_status, payment_method_type, rejection_reason, submitted_at")
-          .eq("report_id", r.report_id)
-          .maybeSingle();
+        let claim: RewardClaim | null = null;
+        try {
+          const result = await db
+            .from("reward_claims")
+            .select("id, claim_id, report_id, claim_status, payment_method_type, rejection_reason, submitted_at")
+            .eq("report_id", r.report_id)
+            .maybeSingle();
+          claim = result.data as RewardClaim | null;
+        } catch {
+          claim = null;
+        }
 
         return {
           id: r.id,

@@ -52,6 +52,10 @@ export interface ReportHistoryItem {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
+function filterUndefinedValues<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(Object.entries(obj).filter(([, value]) => value !== undefined)) as T;
+}
+
 async function getAdminAndUser() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { getRequestHeader } = await import("@tanstack/react-start/server");
@@ -106,9 +110,10 @@ export const updateProfile = createServerFn({ method: "POST" })
     // Cast to `any` to avoid schema-cache validation errors for fields like `phone_number`.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = supabaseAdmin as any;
+    const updatePayload = filterUndefinedValues({ ...data, updated_at: new Date().toISOString() });
     const { error } = await db
       .from("profiles")
-      .update({ ...data, updated_at: new Date().toISOString() })
+      .update(updatePayload)
       .eq("id", user.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -131,7 +136,12 @@ export const getMyReports = createServerFn({ method: "POST" })
     if (data.caseType !== "all") q = q.eq("case_type", data.caseType);
     const from = (data.page - 1) * PAGE;
     const { data: rows, count, error } = await q.range(from, from + PAGE - 1);
-    if (error) throw new Error(error.message);
+    if (error) {
+      // If the reports table is unavailable or the query fails, fail gracefully.
+      // eslint-disable-next-line no-console
+      console.warn("Failed to load reports", error);
+      return { items: [], total: 0 };
+    }
 
     // Enrich with case name/photo and conversation id
     const items: ReportHistoryItem[] = await Promise.all(

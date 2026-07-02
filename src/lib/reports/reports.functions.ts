@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { getRequestAuthToken } from "@/lib/supabase-auth";
 
 const photoSchema = z.object({
   path: z.string().min(1).max(500),
@@ -102,14 +103,12 @@ export const submitReport = createServerFn({ method: "POST" })
     if (caseErr) throw new Error(caseErr.message);
     if (!caseRow) throw new Error("Case not found or inactive.");
 
-    const { getRequestHeader } = await import("@tanstack/react-start/server");
-    const authHeader = getRequestHeader("authorization");
+    const token = await getRequestAuthToken();
 
     // Resolve authenticated user id (optional).
     let reporterId: string | null = null;
     try {
-      if (authHeader?.toLowerCase().startsWith("bearer ")) {
-        const token = authHeader.slice(7);
+      if (token) {
         const { data: u } = await supabaseAdmin.auth.getUser(token);
         reporterId = u.user?.id ?? null;
       }
@@ -117,7 +116,7 @@ export const submitReport = createServerFn({ method: "POST" })
       reporterId = null;
     }
 
-    const insertClient = await getReportInsertClient(authHeader);
+    const insertClient = await getReportInsertClient(token ? `Bearer ${token}` : null);
 
     // Retry on report_id collision (very unlikely).
     for (let attempt = 0; attempt < 3; attempt++) {

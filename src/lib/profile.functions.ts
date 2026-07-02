@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getAuthenticatedUser } from "@/lib/supabase-auth";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -57,14 +58,7 @@ function filterUndefinedValues<T extends Record<string, unknown>>(obj: T): T {
 }
 
 async function getAdminAndUser() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { getRequestHeader } = await import("@tanstack/react-start/server");
-  const auth = getRequestHeader("authorization") ?? "";
-  const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : "";
-  if (!token) throw new Error("Unauthorized");
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
-  if (error || !user) throw new Error("Unauthorized");
-  return { supabaseAdmin, user };
+  return getAuthenticatedUser();
 }
 
 // ── Profile ────────────────────────────────────────────────────────────────

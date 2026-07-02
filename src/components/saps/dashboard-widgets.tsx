@@ -162,7 +162,7 @@ function ActionCard({ to, icon: Icon, title, description, tone = "primary" }: Ac
         : "bg-primary/10 text-primary";
 
   return (
-    <Link to={to} className="group block focus:outline-none">
+    <Link to={to} onClick={() => console.debug("ActionCard navigate to", to)} className="group block focus:outline-none">
       <Card className="h-full transition-all group-hover:-translate-y-0.5 group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-accent">
         <CardContent className="flex h-full flex-col gap-3 p-5">
           <span

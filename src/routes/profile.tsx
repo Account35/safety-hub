@@ -80,10 +80,18 @@ function AuthenticatedProfile() {
   }, []);
 
   async function save(field: Record<string, unknown>) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await updateProfile({ data: field } as any);
-    const refreshed = await getProfile();
-    setProfile(refreshed);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await updateProfile({ data: field } as any);
+      const refreshed = await getProfile();
+      setProfile(refreshed);
+    } catch (err: unknown) {
+      // Surface the error for easier debugging and show a toast to the user
+      // eslint-disable-next-line no-console
+      console.error("Failed to update profile", err);
+      toast.error(err instanceof Error ? err.message : "Failed to save profile");
+      throw err;
+    }
   }
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {

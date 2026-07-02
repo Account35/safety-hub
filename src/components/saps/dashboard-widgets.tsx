@@ -30,8 +30,11 @@ function greetingFor(date: Date) {
 export function TimeAndGreeting() {
   const { user, profile } = useAuth();
   const [now, setNow] = useState(() => new Date());
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
   }, []);
@@ -49,12 +52,24 @@ export function TimeAndGreeting() {
 
   return (
     <section aria-labelledby="greeting-heading" className="space-y-2">
-      <p className="text-sm text-muted-foreground">
-        {date} · <span className="tabular-nums">{time}</span>
+      <p className="text-sm text-muted-foreground" suppressHydrationWarning>
+        {mounted ? (
+          <>
+            {date} · <span className="tabular-nums">{time}</span>
+          </>
+        ) : (
+          <span className="tabular-nums">&nbsp;</span>
+        )}
       </p>
-      <h1 id="greeting-heading" className="text-3xl font-bold tracking-tight">
+      <h1
+        id="greeting-heading"
+        className="text-3xl font-bold tracking-tight"
+        suppressHydrationWarning
+      >
         {user
-          ? `${greetingFor(now)}${name ? `, ${name}` : ""}.`
+          ? mounted
+            ? `${greetingFor(now)}${name ? `, ${name}` : ""}.`
+            : `Welcome back${name ? `, ${name}` : ""}.`
           : t.dashboard.welcomeGuest}
       </h1>
       <p className="max-w-2xl text-base text-muted-foreground">

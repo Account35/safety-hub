@@ -102,7 +102,11 @@ export const updateProfile = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin, user } = await getAdminAndUser();
-    const { error } = await (supabaseAdmin as unknown as { from: (t: string) => { update: (v: unknown) => { eq: (c: string, v: string) => Promise<{ error: { message: string } | null }> } } })
+    // The generated Supabase types may not include all profile columns in dev.
+    // Cast to `any` to avoid schema-cache validation errors for fields like `phone_number`.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabaseAdmin as any;
+    const { error } = await db
       .from("profiles")
       .update({ ...data, updated_at: new Date().toISOString() })
       .eq("id", user.id);

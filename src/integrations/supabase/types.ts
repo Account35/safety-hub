@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaign_delivery: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          delivered_timestamp: string | null
+          device_token: string | null
+          id: string
+          opened_timestamp: string | null
+          recipient_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          delivered_timestamp?: string | null
+          device_token?: string | null
+          id?: string
+          opened_timestamp?: string | null
+          recipient_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          delivered_timestamp?: string | null
+          device_token?: string | null
+          id?: string
+          opened_timestamp?: string | null
+          recipient_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_delivery_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          body_content: string
+          campaign_type: Database["public"]["Enums"]["campaign_type"]
+          case_id: string | null
+          case_type: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          language_code: string
+          scheduled_send_timestamp: string
+          sent_timestamp: string | null
+          status: Database["public"]["Enums"]["campaign_status"]
+          target_audience: Database["public"]["Enums"]["campaign_audience"]
+          target_townships: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body_content: string
+          campaign_type: Database["public"]["Enums"]["campaign_type"]
+          case_id?: string | null
+          case_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language_code?: string
+          scheduled_send_timestamp: string
+          sent_timestamp?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"]
+          target_audience?: Database["public"]["Enums"]["campaign_audience"]
+          target_townships?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body_content?: string
+          campaign_type?: Database["public"]["Enums"]["campaign_type"]
+          case_id?: string | null
+          case_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language_code?: string
+          scheduled_send_timestamp?: string
+          sent_timestamp?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"]
+          target_audience?: Database["public"]["Enums"]["campaign_audience"]
+          target_townships?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           case_id: string
@@ -315,6 +410,83 @@ export type Database = {
         }
         Relationships: []
       }
+      report_ai_analysis: {
+        Row: {
+          analyst_reviewed: boolean
+          cluster_confidence:
+            | Database["public"]["Enums"]["cluster_confidence"]
+            | null
+          cluster_contradictions: Json
+          cluster_id: string | null
+          cluster_primary: boolean
+          cluster_role: Database["public"]["Enums"]["cluster_role"] | null
+          cluster_supporting_count: number
+          concentrated_sighting: boolean
+          created_at: string
+          id: string
+          key_details_extracted: Json
+          quality_factors: string[]
+          quality_score: number
+          quality_tier: Database["public"]["Enums"]["quality_tier"]
+          report_id: string
+          status: Database["public"]["Enums"]["analysis_status"]
+          suggested_case_matches: Json
+          updated_at: string
+        }
+        Insert: {
+          analyst_reviewed?: boolean
+          cluster_confidence?:
+            | Database["public"]["Enums"]["cluster_confidence"]
+            | null
+          cluster_contradictions?: Json
+          cluster_id?: string | null
+          cluster_primary?: boolean
+          cluster_role?: Database["public"]["Enums"]["cluster_role"] | null
+          cluster_supporting_count?: number
+          concentrated_sighting?: boolean
+          created_at?: string
+          id?: string
+          key_details_extracted?: Json
+          quality_factors?: string[]
+          quality_score?: number
+          quality_tier?: Database["public"]["Enums"]["quality_tier"]
+          report_id: string
+          status?: Database["public"]["Enums"]["analysis_status"]
+          suggested_case_matches?: Json
+          updated_at?: string
+        }
+        Update: {
+          analyst_reviewed?: boolean
+          cluster_confidence?:
+            | Database["public"]["Enums"]["cluster_confidence"]
+            | null
+          cluster_contradictions?: Json
+          cluster_id?: string | null
+          cluster_primary?: boolean
+          cluster_role?: Database["public"]["Enums"]["cluster_role"] | null
+          cluster_supporting_count?: number
+          concentrated_sighting?: boolean
+          created_at?: string
+          id?: string
+          key_details_extracted?: Json
+          quality_factors?: string[]
+          quality_score?: number
+          quality_tier?: Database["public"]["Enums"]["quality_tier"]
+          report_id?: string
+          status?: Database["public"]["Enums"]["analysis_status"]
+          suggested_case_matches?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_ai_analysis_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           accuracy_confirmed: boolean
@@ -396,6 +568,18 @@ export type Database = {
           updated_at?: string
           voice_recording_path?: string | null
           voluntary_confirmed?: boolean
+        }
+        Relationships: []
+      }
+      townships_ref: {
+        Row: {
+          name: string
+        }
+        Insert: {
+          name: string
+        }
+        Update: {
+          name?: string
         }
         Relationships: []
       }
@@ -536,6 +720,7 @@ export type Database = {
       }
     }
     Enums: {
+      analysis_status: "pending" | "complete" | "partial" | "failed"
       app_role:
         | "guest"
         | "user"
@@ -544,7 +729,16 @@ export type Database = {
         | "moderator"
         | "admin"
         | "super_admin"
+      campaign_audience: "all_users" | "registered_only"
+      campaign_status: "draft" | "scheduled" | "sent" | "cancelled"
+      campaign_type:
+        | "safety_tip"
+        | "missing_person_alert"
+        | "wanted_person_alert"
+        | "general_announcement"
       case_status: "active" | "found" | "closed"
+      cluster_confidence: "high" | "medium"
+      cluster_role: "primary" | "supporting"
       danger_level: "high" | "medium" | "low"
       disappearance_circumstance:
         | "voluntary"
@@ -552,6 +746,7 @@ export type Database = {
         | "endangered"
         | "medical"
         | "unknown"
+      quality_tier: "detailed" | "standard" | "limited"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -679,6 +874,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      analysis_status: ["pending", "complete", "partial", "failed"],
       app_role: [
         "guest",
         "user",
@@ -688,7 +884,17 @@ export const Constants = {
         "admin",
         "super_admin",
       ],
+      campaign_audience: ["all_users", "registered_only"],
+      campaign_status: ["draft", "scheduled", "sent", "cancelled"],
+      campaign_type: [
+        "safety_tip",
+        "missing_person_alert",
+        "wanted_person_alert",
+        "general_announcement",
+      ],
       case_status: ["active", "found", "closed"],
+      cluster_confidence: ["high", "medium"],
+      cluster_role: ["primary", "supporting"],
       danger_level: ["high", "medium", "low"],
       disappearance_circumstance: [
         "voluntary",
@@ -697,6 +903,7 @@ export const Constants = {
         "medical",
         "unknown",
       ],
+      quality_tier: ["detailed", "standard", "limited"],
     },
   },
 } as const

@@ -213,26 +213,104 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          delivery_channel: string
+          new_message_notifications: boolean
+          quiet_hours_enabled: boolean
+          quiet_hours_end: string
+          quiet_hours_start: string
+          report_status_notifications: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_channel?: string
+          new_message_notifications?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string
+          quiet_hours_start?: string
+          report_status_notifications?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivery_channel?: string
+          new_message_notifications?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string
+          quiet_hours_start?: string
+          report_status_notifications?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      privacy_settings: {
+        Row: {
+          created_at: string
+          data_retention_acknowledged: boolean
+          location_sharing_level: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_retention_acknowledged?: boolean
+          location_sharing_level?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data_retention_acknowledged?: boolean
+          location_sharing_level?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           area: string | null
+          avatar_url: string | null
           created_at: string
           full_name: string
           id: string
+          language_preference: string
+          last_login_at: string | null
+          phone_number: string | null
+          phone_verified: boolean
+          primary_township: string | null
           updated_at: string
         }
         Insert: {
           area?: string | null
+          avatar_url?: string | null
           created_at?: string
           full_name?: string
           id: string
+          language_preference?: string
+          last_login_at?: string | null
+          phone_number?: string | null
+          phone_verified?: boolean
+          primary_township?: string | null
           updated_at?: string
         }
         Update: {
           area?: string | null
+          avatar_url?: string | null
           created_at?: string
           full_name?: string
           id?: string
+          language_preference?: string
+          last_login_at?: string | null
+          phone_number?: string | null
+          phone_verified?: boolean
+          primary_township?: string | null
           updated_at?: string
         }
         Relationships: []

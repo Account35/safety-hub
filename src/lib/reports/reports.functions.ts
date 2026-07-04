@@ -153,7 +153,7 @@ export const submitReport = createServerFn({ method: "POST" })
         }
         return { reportId };
       }
-      if (!/duplicate key/i.test(error.message)) throw new Error(error.message);
+      if (error && !/duplicate key/i.test(error.message)) throw new Error(error.message);
     }
     throw new Error("Could not generate a unique report reference. Please try again.");
   });

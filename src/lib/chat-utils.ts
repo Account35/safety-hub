@@ -65,5 +65,13 @@ export function setStoredUnread(counts: Record<string, number>) {
 }
 
 export function getTotalUnread(): number {
-  return Object.values(getStoredUnread()).reduce((s, n) => s + n, 0);
+  const conversations = Object.values(getStoredUnread()).reduce((s, n) => s + n, 0);
+  let campaigns = 0;
+  try {
+    const v = Number(typeof localStorage !== "undefined" ? localStorage.getItem("campaign_unread_count") : 0);
+    if (Number.isFinite(v)) campaigns = v;
+  } catch {
+    campaigns = 0;
+  }
+  return conversations + campaigns;
 }

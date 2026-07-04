@@ -80,7 +80,6 @@ export async function clusterReportRealtime(reportRowId: string): Promise<void> 
       .eq("report_id", row.id);
 
     // Bump supporting count on the cluster primary
-    await supabaseAdmin.rpc("noop_touch").then(() => undefined, () => undefined);
     const { data: members } = await supabaseAdmin
       .from("report_ai_analysis")
       .select("id, cluster_role")

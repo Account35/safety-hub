@@ -7,6 +7,11 @@ import { fetchConversations, fetchMessages } from "@/lib/chat-data";
 import { useAuth } from "@/lib/auth-context";
 import type { Conversation, Message } from "@/lib/chat-types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { getMyCampaigns, markCampaignOpened, type CampaignInboxItem } from "@/lib/campaigns/campaigns.functions";
+import { setCampaignUnreadCount } from "@/lib/campaigns/campaign-unread";
+import { formatRelativeTime } from "@/lib/chat-utils";
 
 export const Route = createFileRoute("/chats")({
   head: () => ({
@@ -21,6 +26,9 @@ function ChatsPage() {
   const [lastMessages, setLastMessages] = useState<Record<string, Message>>({});
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [campaigns, setCampaigns] = useState<CampaignInboxItem[]>([]);
+  const fetchCampaigns = useServerFn(getMyCampaigns);
+  const markOpened = useServerFn(markCampaignOpened);
 
   useEffect(() => {
     if (!user) return;
@@ -42,6 +50,24 @@ function ChatsPage() {
       })
       .finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchCampaigns({ data: { limit: 5, offset: 0 } })
+      .then((items) => {
+        setCampaigns(items);
+        const unread = items.filter((i) => !i.opened_timestamp).length;
+        setCampaignUnreadCount(unread);
+        // Mark all visible campaigns as opened (matches Phase 4 read behaviour)
+        for (const it of items) {
+          if (!it.opened_timestamp) {
+            markOpened({ data: { deliveryId: it.delivery_id } }).catch(() => undefined);
+          }
+        }
+        setCampaignUnreadCount(0);
+      })
+      .catch(() => undefined);
+  }, [user, fetchCampaigns, markOpened]);
 
   const active = conversations.filter(
     (c) => c.status !== "closed" && c.status !== "archived",
@@ -109,6 +135,68 @@ function ChatsPage() {
               />
             ))}
           </div>
+        </section>
+      )}
+
+      {campaigns.length > 0 && (
+        <section aria-labelledby="saps-announcements-heading" className="mt-8">
+          <h2 id="saps-announcements-heading" className="text-lg font-semibold text-primary mb-3 flex items-center gap-2">
+            <Shield className="size-5" aria-hidden="true" /> SAPS Announcements
+          </h2>
+          <ul className="space-y-3" aria-live="polite">
+            {campaigns.map((it) => {
+              const alert = it.campaign.campaign_type === "missing_person_alert" || it.campaign.campaign_type === "wanted_person_alert";
+              const to = alert && it.campaign.case_id
+                ? (it.campaign.campaign_type === "wanted_person_alert" ? "/cases/wanted/$id" : "/cases/missing/$id")
+                : "/campaigns/$id";
+              const params = alert && it.campaign.case_id ? { id: it.campaign.case_id } : { id: it.campaign.id };
+              const unread = !it.opened_timestamp;
+              return (
+                <li key={it.delivery_id}>
+                  <Link
+                    to={to}
+                    params={params}
+                    className="block rounded-xl border border-border bg-card p-4 min-h-[64px] hover:bg-accent/50 focus-visible:ring-1 focus-visible:ring-ring outline-none"
+                    aria-label={`Campaign from SAPS, ${it.campaign.title}, ${it.delivered_timestamp ? formatRelativeTime(it.delivered_timestamp) : ""}, ${unread ? "unread" : "read"}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      {alert && it.case_thumbnail && (
+                        <img
+                          src={it.case_thumbnail}
+                          alt={it.case_full_name ? `Photograph of ${it.case_full_name}` : "Case photo"}
+                          className="size-8 rounded-full object-cover"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-primary truncate">{it.campaign.title}</h3>
+                          {unread && <span aria-hidden="true" className="size-2 rounded-full bg-accent" />}
+                        </div>
+                        {alert && (
+                          <p className={`text-xs font-medium ${it.campaign.campaign_type === "wanted_person_alert" ? "text-destructive" : "text-primary"}`}>
+                            {it.campaign.campaign_type === "wanted_person_alert" ? "Wanted Person" : "Missing Person"}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {it.campaign.body_content.slice(0, 60)}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          {it.delivered_timestamp ? formatRelativeTime(it.delivered_timestamp) : ""}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          {campaigns.length >= 5 && (
+            <div className="mt-3">
+              <Link to="/campaigns" className="inline-flex items-center min-h-[44px] text-sm text-primary underline underline-offset-4">
+                View all announcements
+              </Link>
+            </div>
+          )}
         </section>
       )}
     </PageShell>

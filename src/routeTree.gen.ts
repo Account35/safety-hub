@@ -17,6 +17,7 @@ import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
+import { Route as CampaignsIndexRouteImport } from './routes/campaigns.index'
 import { Route as ProfileRewardsRouteImport } from './routes/profile.rewards'
 import { Route as ProfileReportsRouteImport } from './routes/profile.reports'
 import { Route as ProfilePrivacySecurityRouteImport } from './routes/profile.privacy-security'
@@ -24,9 +25,12 @@ import { Route as ProfileNotificationsRouteImport } from './routes/profile.notif
 import { Route as ChatsIdRouteImport } from './routes/chats.$id'
 import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as CasesMissingRouteImport } from './routes/cases.missing'
+import { Route as CampaignsIdRouteImport } from './routes/campaigns.$id'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as CasesWantedIdRouteImport } from './routes/cases.wanted.$id'
 import { Route as CasesMissingIdRouteImport } from './routes/cases.missing.$id'
+import { Route as ApiPublicHooksClusterSweepRouteImport } from './routes/api/public/hooks/cluster-sweep'
+import { Route as ApiPublicHooksCampaignDispatchRouteImport } from './routes/api/public/hooks/campaign-dispatch'
 
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
@@ -67,6 +71,11 @@ const CasesIndexRoute = CasesIndexRouteImport.update({
   path: '/cases/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
+  id: '/campaigns/',
+  path: '/campaigns/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRewardsRoute = ProfileRewardsRouteImport.update({
   id: '/rewards',
   path: '/rewards',
@@ -102,6 +111,11 @@ const CasesMissingRoute = CasesMissingRouteImport.update({
   path: '/cases/missing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CampaignsIdRoute = CampaignsIdRouteImport.update({
+  id: '/campaigns/$id',
+  path: '/campaigns/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -117,6 +131,18 @@ const CasesMissingIdRoute = CasesMissingIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => CasesMissingRoute,
 } as any)
+const ApiPublicHooksClusterSweepRoute =
+  ApiPublicHooksClusterSweepRouteImport.update({
+    id: '/api/public/hooks/cluster-sweep',
+    path: '/api/public/hooks/cluster-sweep',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksCampaignDispatchRoute =
+  ApiPublicHooksCampaignDispatchRouteImport.update({
+    id: '/api/public/hooks/campaign-dispatch',
+    path: '/api/public/hooks/campaign-dispatch',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -126,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/chats/$id': typeof ChatsIdRoute
@@ -133,9 +160,12 @@ export interface FileRoutesByFullPath {
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
   '/profile/rewards': typeof ProfileRewardsRoute
+  '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
+  '/api/public/hooks/campaign-dispatch': typeof ApiPublicHooksCampaignDispatchRoute
+  '/api/public/hooks/cluster-sweep': typeof ApiPublicHooksClusterSweepRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -145,6 +175,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/chats/$id': typeof ChatsIdRoute
@@ -152,9 +183,12 @@ export interface FileRoutesByTo {
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
   '/profile/rewards': typeof ProfileRewardsRoute
+  '/campaigns': typeof CampaignsIndexRoute
   '/cases': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
+  '/api/public/hooks/campaign-dispatch': typeof ApiPublicHooksCampaignDispatchRoute
+  '/api/public/hooks/cluster-sweep': typeof ApiPublicHooksClusterSweepRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -166,6 +200,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/chats/$id': typeof ChatsIdRoute
@@ -173,9 +208,12 @@ export interface FileRoutesById {
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
   '/profile/rewards': typeof ProfileRewardsRoute
+  '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
+  '/api/public/hooks/campaign-dispatch': typeof ApiPublicHooksCampaignDispatchRoute
+  '/api/public/hooks/cluster-sweep': typeof ApiPublicHooksClusterSweepRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -187,6 +225,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/report'
     | '/dashboard'
+    | '/campaigns/$id'
     | '/cases/missing'
     | '/cases/wanted'
     | '/chats/$id'
@@ -194,9 +233,12 @@ export interface FileRouteTypes {
     | '/profile/privacy-security'
     | '/profile/reports'
     | '/profile/rewards'
+    | '/campaigns/'
     | '/cases/'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
+    | '/api/public/hooks/campaign-dispatch'
+    | '/api/public/hooks/cluster-sweep'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -206,6 +248,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/report'
     | '/dashboard'
+    | '/campaigns/$id'
     | '/cases/missing'
     | '/cases/wanted'
     | '/chats/$id'
@@ -213,9 +256,12 @@ export interface FileRouteTypes {
     | '/profile/privacy-security'
     | '/profile/reports'
     | '/profile/rewards'
+    | '/campaigns'
     | '/cases'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
+    | '/api/public/hooks/campaign-dispatch'
+    | '/api/public/hooks/cluster-sweep'
   id:
     | '__root__'
     | '/'
@@ -226,6 +272,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/report'
     | '/_authenticated/dashboard'
+    | '/campaigns/$id'
     | '/cases/missing'
     | '/cases/wanted'
     | '/chats/$id'
@@ -233,9 +280,12 @@ export interface FileRouteTypes {
     | '/profile/privacy-security'
     | '/profile/reports'
     | '/profile/rewards'
+    | '/campaigns/'
     | '/cases/'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
+    | '/api/public/hooks/campaign-dispatch'
+    | '/api/public/hooks/cluster-sweep'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -246,9 +296,13 @@ export interface RootRouteChildren {
   ChatsRoute: typeof ChatsRouteWithChildren
   ProfileRoute: typeof ProfileRouteWithChildren
   ReportRoute: typeof ReportRoute
+  CampaignsIdRoute: typeof CampaignsIdRoute
   CasesMissingRoute: typeof CasesMissingRouteWithChildren
   CasesWantedRoute: typeof CasesWantedRouteWithChildren
+  CampaignsIndexRoute: typeof CampaignsIndexRoute
   CasesIndexRoute: typeof CasesIndexRoute
+  ApiPublicHooksCampaignDispatchRoute: typeof ApiPublicHooksCampaignDispatchRoute
+  ApiPublicHooksClusterSweepRoute: typeof ApiPublicHooksClusterSweepRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -309,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/campaigns/': {
+      id: '/campaigns/'
+      path: '/campaigns'
+      fullPath: '/campaigns/'
+      preLoaderRoute: typeof CampaignsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/rewards': {
       id: '/profile/rewards'
       path: '/rewards'
@@ -358,6 +419,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesMissingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/campaigns/$id': {
+      id: '/campaigns/$id'
+      path: '/campaigns/$id'
+      fullPath: '/campaigns/$id'
+      preLoaderRoute: typeof CampaignsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -378,6 +446,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/cases/missing/$id'
       preLoaderRoute: typeof CasesMissingIdRouteImport
       parentRoute: typeof CasesMissingRoute
+    }
+    '/api/public/hooks/cluster-sweep': {
+      id: '/api/public/hooks/cluster-sweep'
+      path: '/api/public/hooks/cluster-sweep'
+      fullPath: '/api/public/hooks/cluster-sweep'
+      preLoaderRoute: typeof ApiPublicHooksClusterSweepRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/campaign-dispatch': {
+      id: '/api/public/hooks/campaign-dispatch'
+      path: '/api/public/hooks/campaign-dispatch'
+      fullPath: '/api/public/hooks/campaign-dispatch'
+      preLoaderRoute: typeof ApiPublicHooksCampaignDispatchRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -452,9 +534,13 @@ const rootRouteChildren: RootRouteChildren = {
   ChatsRoute: ChatsRouteWithChildren,
   ProfileRoute: ProfileRouteWithChildren,
   ReportRoute: ReportRoute,
+  CampaignsIdRoute: CampaignsIdRoute,
   CasesMissingRoute: CasesMissingRouteWithChildren,
   CasesWantedRoute: CasesWantedRouteWithChildren,
+  CampaignsIndexRoute: CampaignsIndexRoute,
   CasesIndexRoute: CasesIndexRoute,
+  ApiPublicHooksCampaignDispatchRoute: ApiPublicHooksCampaignDispatchRoute,
+  ApiPublicHooksClusterSweepRoute: ApiPublicHooksClusterSweepRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

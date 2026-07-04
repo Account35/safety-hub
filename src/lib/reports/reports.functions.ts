@@ -121,7 +121,7 @@ export const submitReport = createServerFn({ method: "POST" })
     // Retry on report_id collision (very unlikely).
     for (let attempt = 0; attempt < 3; attempt++) {
       const reportId = generateReportId();
-      const { error } = await insertClient.from("reports").insert({
+      const { data: inserted, error } = await insertClient.from("reports").insert({
         report_id: reportId,
         case_id: data.caseId,
         case_type: data.caseType,
@@ -142,9 +142,18 @@ export const submitReport = createServerFn({ method: "POST" })
         safety_acknowledgment: true,
         accuracy_confirmed: true,
         voluntary_confirmed: true,
-      });
-      if (!error) return { reportId };
-      if (!/duplicate key/i.test(error.message)) throw new Error(error.message);
+      }).select("id").single();
+      if (!error && inserted) {
+        // Fire-and-forget AI analysis (never delays confirmation).
+        try {
+          const { scheduleAnalysis } = await import("@/lib/ai/analysis.server");
+          scheduleAnalysis(inserted.id as string);
+        } catch (e) {
+          console.warn("[submitReport] analysis scheduling failed:", (e as Error).message);
+        }
+        return { reportId };
+      }
+      if (error && !/duplicate key/i.test(error.message)) throw new Error(error.message);
     }
     throw new Error("Could not generate a unique report reference. Please try again.");
   });

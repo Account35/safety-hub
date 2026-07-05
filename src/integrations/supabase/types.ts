@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      accessibility_preferences: {
+        Row: {
+          created_at: string
+          high_contrast_enabled: boolean
+          reduce_motion_enabled: boolean
+          text_scale_factor: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          high_contrast_enabled?: boolean
+          reduce_motion_enabled?: boolean
+          text_scale_factor?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          high_contrast_enabled?: boolean
+          reduce_motion_enabled?: boolean
+          text_scale_factor?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       campaign_delivery: {
         Row: {
           campaign_id: string
@@ -580,6 +607,27 @@ export type Database = {
         }
         Update: {
           name?: string
+        }
+        Relationships: []
+      }
+      translation_fallback_log: {
+        Row: {
+          id: string
+          language_code: string
+          logged_at: string
+          translation_key: string
+        }
+        Insert: {
+          id?: string
+          language_code: string
+          logged_at?: string
+          translation_key: string
+        }
+        Update: {
+          id?: string
+          language_code?: string
+          logged_at?: string
+          translation_key?: string
         }
         Relationships: []
       }

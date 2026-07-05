@@ -1,4 +1,4 @@
-import type { t as enT } from "./en";
+import type { Translations } from "./types";
 
 /**
  * Afrikaans (af-ZA) translations. Structurally identical to `en.ts` — TS
@@ -7,7 +7,7 @@ import type { t as enT } from "./en";
  * with the current en.ts coverage so the app is fully bilingual for
  * everything already extracted.
  */
-export const t: typeof enT = {
+export const t: Translations = {
   app: {
     name: "Gemeenskapsveiligheidsnaspeurstelsel",
     tagline: "Help om jou gemeenskap veilig te hou",

@@ -1,106 +1,109 @@
 
-# Phase 7 — AI-Assisted Features & Public Awareness Campaigns
+# Phase 8 — Multilingual Support & Accessibility
 
-Build the AI intelligence layer over Phase 3 reports and the SAPS campaign infrastructure with citizen-facing display. Admin UI is deferred to Phase 9. All AI/analysis access uses `report_id` / `reporter_id` only — never joins to `profiles` / `user_id` / identity.
+Delivers a runtime i18n system (English `en-ZA` + Afrikaans `af-ZA`), a language picker in Profile settings, high-contrast mode, four-level text scaling, and reduce-motion — all inherited by every existing screen with no layout rebuilds.
 
-## 1. Database (single migration)
+Aligned with the user's pragmatic-phased preference: **translations stored as bundled JSON files in the client, not in the database**. The DB only stores the user's chosen language + accessibility prefs. This avoids a `TRANSLATIONS` table with thousands of rows on the read path of every page. Future languages are added by dropping a new JSON file and toggling `is_active` in a small registry.
 
-New tables in `public`, each with GRANTs → RLS → policies:
+---
 
-- **`report_ai_analysis`** (1:1 with `reports.id`)
-  - `quality_score int`, `quality_tier` enum(`detailed`,`standard`,`limited`)
-  - `quality_factors text[]`, `key_details_extracted jsonb`
-  - `suggested_case_matches jsonb` (array of `{case_id, case_type, confidence}`)
-  - `cluster_id uuid`, `cluster_confidence` enum(`high`,`medium`), `cluster_role` enum(`primary`,`supporting`), `cluster_primary bool`, `cluster_supporting_count int`, `cluster_contradictions jsonb`, `concentrated_sighting bool`
-  - `status` enum(`pending`,`complete`,`partial`,`failed`), `analyst_reviewed bool`
-  - RLS: no `authenticated` read/write; `service_role` only (admin surfaces come in Phase 9).
+## 1. Data model (minimal DB footprint)
 
-- **`campaigns`**
-  - `campaign_type` enum(`safety_tip`,`missing_person_alert`,`wanted_person_alert`,`general_announcement`)
-  - `title`, `body_content`, `target_audience` enum(`all_users`,`registered_only`)
-  - `target_townships text[]`, `case_id uuid` (nullable, required for alert types via trigger validation)
-  - `scheduled_send_timestamp`, `sent_timestamp`, `status` enum(`draft`,`scheduled`,`sent`,`cancelled`)
-  - `created_by uuid`, `language_code text default 'en-ZA'`
-  - RLS: `authenticated` SELECT only where `status='sent'` (citizens see sent campaigns targeted to them via server fn); writes = `service_role`.
+Migration adds two tables + extends `profiles`:
 
-- **`campaign_delivery`**
-  - `campaign_id`, `recipient_user_id uuid nullable`, `device_token text nullable`
-  - `delivered_timestamp`, `opened_timestamp`
-  - RLS: `authenticated` can SELECT/UPDATE own rows (`recipient_user_id = auth.uid()`) to mark opened; writes = `service_role`.
+- `profiles.language_preference text default 'en-ZA'` (add column if missing)
+- `public.accessibility_preferences`
+  - `user_id uuid pk references auth.users on delete cascade`
+  - `high_contrast_enabled bool default false`
+  - `text_scale_factor numeric default 1.0` (constrained to 1.0, 1.25, 1.5, 2.0)
+  - `reduce_motion_enabled bool default false`
+  - RLS: user reads/writes their own row only.
+- `public.translation_fallback_log` (monitoring — insert-only from client for missing keys)
+  - `translation_key text`, `language_code text`, `logged_at timestamptz default now()`
+  - RLS: authenticated may INSERT; SELECT restricted to `admin` role via `has_role`.
 
-Validation trigger on `campaigns`:
-- title 5–80, body 10–500 chars
-- `scheduled_send_timestamp >= now() + 15 min` on insert/status→scheduled
-- alert types require `case_id`
-- each `target_townships` value must exist in a new `townships_ref` seed table (seeded from `src/lib/reports/townships.ts` to enforce Phase 3 consistency)
+Language registry lives in code (`src/lib/i18n/registry.ts`) — no DB table. It's a tiny static list; putting it in Postgres just costs a round-trip.
 
-## 2. AI analysis engine (Prompt 1)
+## 2. Translation infrastructure (`src/lib/i18n/`)
 
-`src/lib/ai/analysis.server.ts` + `src/lib/ai/analysis.functions.ts`:
+```text
+src/lib/i18n/
+├── registry.ts        # LANGUAGES = [{ code: 'en-ZA', ... }, { code: 'af-ZA', ... }]
+├── en.ts              # existing — extend to full coverage
+├── af.ts              # new — full Afrikaans strings
+├── types.ts           # TranslationKey union derived from en.ts shape
+├── i18n-context.tsx   # Provider: current lang, setLang, t(key, vars), plural()
+└── use-translation.ts # hook wrapper
+```
 
-- `analyzeReport(reportId)` — service-role server fn (called from `submitReport` handler AFTER insert, fire-and-forget with `waitUntil`-style detached promise so it never delays the reference-number response).
-- Loads report + linked case (Phase 2). Computes five-dimension score:
-  - detail richness (25%), temporal precision (20%), location specificity (25%), method completeness (20%), reporter confidence (10%).
-- Uses Lovable AI Gateway (`google/gemini-3-flash-preview`) with structured output (Zod schema via `Output.object`) to:
-  - extract `key_details_extracted` (location refs, time refs, clothing, companions, movement), each item flagged confirmed/inferred
-  - suggest up to 3 secondary case matches ≥70% confidence by comparing extracted details vs. active Phase 2 cases (candidate pool pre-filtered server-side to same-province/township + active status to keep prompt small)
-- Deterministic scoring in TS; AI only handles extraction + narrative `quality_factors[]`.
-- 30s timeout → writes `status='partial'`, `analyst_reviewed=false`.
-- Maps score → tier (70+ detailed, 40–69 standard, <40 limited).
-- Every DB access uses `report_id`; no join to `profiles`. Documented as architectural constraint at top of file.
+- **Keys**: nested object matching dot-notation (`t('reporting.safetyWarning.heading')`). English is the source of truth; `af.ts` mirrors its shape and is type-checked against it.
+- **Interpolation**: `{{userName}}` replaced at render.
+- **Plurals**: `t.plural('profile.reports.count', n)` picks `_zero | _one | _many`.
+- **Fallback**: missing af-ZA key → return en-ZA + fire-and-forget insert into `translation_fallback_log` (debounced/dedup'd in memory).
+- **Load**: both bundled statically; language switch is a state change, no network fetch. Sub-second switching is trivial.
+- **Persistence**: authenticated → `profiles.language_preference`; guest → `localStorage['cst_language_preference']`. On sign-up, migrate guest value into profile.
 
-## 3. Clustering (Prompt 2)
+## 3. Language selection UI
 
-`src/lib/ai/clustering.server.ts`:
+Row added to `src/routes/profile.tsx` (above notification settings) labelled `Language / Taal` with current language on the right. Tapping opens `src/routes/profile.language.tsx` — list of active languages showing English name, native name, completion badge, gold check on current. Selection saves + shows toast in the *new* language.
 
-- **Real-time hook** inside `analyzeReport`: after analysis, check existing active clusters (last 48h, same `case_id`, matching township, ±2h `sighting_date/time`). If matches all 3 criteria → high; 2/3 → medium. Attach `cluster_id`, set role, update primary's supporting count. If no cluster and another report matches, create new `cluster_id` and mark higher-quality report primary.
-- **Daily batch** via `pg_cron` → `/api/public/hooks/cluster-sweep`:
-  - Re-cluster last 48h reports, detect contradictions (compare `key_details_extracted.clothing` between cluster members) → write `cluster_contradictions`.
-  - Missing-person concentrated sighting: 3+ missing reports within same township + 2h window → `concentrated_sighting=true`.
-  - Expire clusters: wanted >7 days, missing >3 days → clear cluster fields.
+## 4. Screen wiring (Prompt 3)
 
-Notification to assigned officer on cluster growth is a no-op stub in Phase 7 (officer assignment doesn't exist yet); TODO comment referencing Phase 9.
+Sweep Phases 1–7 route/component files and replace hardcoded citizen-facing strings with `t('…')`. No layout changes. Explicitly skipped:
+- Admin routes (none exist yet — Phase 9)
+- User-generated data (case descriptions, chat messages, campaign body content)
+- Proper nouns (bank names, `RPT-…` reference IDs)
 
-## 4. Campaign infrastructure (Prompt 3)
+Special care:
+- **Safety warning** (`src/components/report/safety-modal.tsx`): translated body/labels; mandatory checkbox behaviour unchanged.
+- **"ARMED AND DANGEROUS"** (wanted detail): translated, same red/uppercase/bold visual weight.
+- **"SAPS Officer"** → **"SAPD-Beampte"** in Afrikaans across chat surfaces.
 
-`src/lib/campaigns/campaigns.functions.ts` (service-role, no public write API in this phase — Phase 9 admin UI will call them; expose typed fns now so Phase 9 has the surface):
+## 5. Accessibility (Prompt 4)
 
-- `createCampaign`, `scheduleCampaign`, `cancelCampaign`, `resolveRecipients(campaignId)`, `markDelivered`, `markOpened`.
-- Scheduler `/api/public/hooks/campaign-dispatch` (pg_cron every minute):
-  - Selects `status='scheduled' AND scheduled_send_timestamp<=now()`.
-  - Transitions to `sent` first (dedupe), then resolves recipients from `profiles` (registered) + optional device tokens, filters by `primary_township ∈ target_townships` (empty = national) and `language_preference = language_code` (soft-match: fall back to include all when only en-ZA exists).
-  - Bulk-inserts `campaign_delivery` rows.
-  - Push delivery uses existing Phase 4 notification stub (`notifyUser` from `chat-utils`); Phase 7 wires campaign payloads through it without inventing new channels.
-- Cancellation clears pre-created `campaign_delivery` rows.
-- `getMyCampaigns({ limit, offset })` — authenticated citizen fn returning campaigns delivered to the caller, joined to case thumbnail for alert types.
+All driven off CSS variables and root font size — every existing screen inherits automatically.
 
-## 5. Citizen-facing campaign display (Prompt 4)
+- **High contrast**: `html[data-contrast="high"]` overrides in `src/styles.css` remapping `--background`, `--foreground`, `--primary`, `--accent`, `--destructive`, etc., to WCAG AAA-safe values.
+- **Text scale**: `html[data-scale="1.25|1.5|2"]` sets `font-size` on `:root`. Since shadcn/Tailwind sizes are rem-based, everything scales.
+- **Reduce motion**: `html[data-reduce-motion="true"]` disables/instantifies transitions and animations project-wide via a small utility block; auto-init from `matchMedia('(prefers-reduced-motion: reduce)')` on first load.
+- Settings UI added to `src/routes/profile.privacy-security.tsx` (toggle + radio group + live preview swatch/sentence). Server function saves to `accessibility_preferences`; guest values in `localStorage` under `cst_high_contrast`, `cst_text_scale`, `cst_reduce_motion`.
+- **Accessibility summary card** on `profile.tsx` when any pref ≠ default.
 
-- **`/campaigns/$id`** route (`src/routes/campaigns.$id.tsx`) — SAPS badge, H1 title (SAPS Navy), body text, "From SAPS, {date}", optional "View Case Details" button for alert types linking to `/cases/{wanted|missing}/$id`. Marks `campaign_delivery.opened_timestamp` on mount.
-- **`/campaigns`** — paginated history using the Phase 2 pagination component.
-- **Activity tab (`src/routes/activity.tsx`)** — add "SAPS Announcements" section below existing conversations:
-  - Latest 5 delivered campaigns, card with title, 60-char preview, relative time, SAPS Gold unread dot (unread = no `opened_timestamp`).
-  - Alert-type cards include 30×30 circular case thumbnail + "Missing Person" / "Wanted Person" label using Phase 2 badge colors.
-  - Tapping alert-type card → Phase 2 case detail route directly (no intermediate). Informational → `/campaigns/$id`.
-  - "View All" link when >5.
-- **BottomNav badge** (`src/components/saps/bottom-nav.tsx`): extend `getTotalUnread` composition so Activity badge = conversations unread + campaigns unread (additive; conversation tracking untouched). Add `getUnreadCampaigns()` polling the same 5s interval.
-- Opening the Activity tab and scrolling the Announcements section marks visible campaigns opened (matches Phase 4 read behavior).
+Applied at boot in `__root.tsx` via a small `AccessibilityProvider` that sets `data-*` attributes on `<html>` from prefs.
 
-## 6. Accessibility & consistency hardening (Prompt 5)
+## 6. Verification (Prompt 5)
 
-- Verify `report_ai_analysis` schema has no `user_id`/PII columns — enforced by table definition.
-- Campaign detail: SAPS badge alt "Official SAPS communication"; case thumbnail alt "Photograph of {full_name}" (Phase 2 pattern).
-- Activity announcements: H2 heading, aria-live "New SAPS announcement: {title}" on new push (extends Phase 4 announcer).
-- Township validation trigger enforces exact-string match with Phase 3 list.
-- Enum values (`safety_tip` etc.) shared via TS constants imported by both server fns and UI — no duplicate string literals.
-- 44×44 tap targets via padding on Announcement cards, "View All", "View Case Details".
-- Reuse existing SAPS badge component/asset — no new variant.
+- Type-level guarantee: `af.ts` must satisfy the type derived from `en.ts` — TS build fails on missing keys, so 100% coverage is enforced at compile time (no runtime audit needed).
+- Manual smoke script: log fallback events; expect zero during the Afrikaans test path.
+- Confirm `_authenticated/` routes and (future) admin routes are not wrapped by the i18n `t()` calls — only citizen-facing text is translated.
+- CSS logical properties note: keep existing utilities; no RTL work needed for SA languages.
 
-## Technical notes
+## 7. Deliverables (file map)
 
-- **Anonymity architectural comment** at top of `analysis.server.ts`, `clustering.server.ts`, and the migration file: "Access reports via report_id/reporter_id only. Never join to profiles/user_id/identity_confirmation."
-- **Fire-and-forget analysis**: inside `submitReport` handler, after insert succeeds, invoke `void analyzeReport(reportId).catch(logError)` before returning. In Cloudflare Worker runtime, use `ctx.waitUntil`-equivalent via a top-level detached promise; acceptable because analysis writes to its own table and doesn't affect the response.
-- **AI model**: `google/gemini-3-flash-preview` default, structured output via Zod schema.
-- **Cron endpoints** live under `src/routes/api/public/hooks/` (cluster-sweep, campaign-dispatch), authenticated via `apikey` header pattern.
-- **Migration order**: enums → `townships_ref` seed → `report_ai_analysis` → `campaigns` → `campaign_delivery` → GRANTs → RLS → policies → validation trigger → indexes on `(status, scheduled_send_timestamp)`, `(campaign_id, recipient_user_id)`, `(cluster_id)`.
-- No admin UI, no reporter-visible quality score, no heat maps, no facial recognition, no reply/share on campaigns.
+New:
+- `supabase/migrations/<ts>_phase8_i18n_a11y.sql`
+- `src/lib/i18n/registry.ts`, `af.ts`, `types.ts`, `i18n-context.tsx`, `use-translation.ts`
+- `src/lib/accessibility/accessibility-context.tsx`, `accessibility.functions.ts`
+- `src/routes/profile.language.tsx`
+- Extend `src/lib/i18n/en.ts` to full key coverage
+
+Edited (wiring only, no layout changes):
+- `src/routes/__root.tsx` (providers + `data-*` attributes)
+- `src/routes/profile.tsx` (language row + a11y summary)
+- `src/routes/profile.privacy-security.tsx` (accessibility section)
+- `src/styles.css` (high-contrast + scale + reduce-motion blocks)
+- Phase 1–7 route/component files: replace hardcoded strings with `t(...)`
+
+## 8. Out of scope (per spec)
+
+Zulu/Xhosa/Sotho content, machine translation of report bodies, admin panel translation, sign language, voice nav, RTL layouts.
+
+---
+
+**Suggested execution order** if you'd like to split this into approvable chunks:
+1. Migration + i18n scaffold + accessibility CSS/context (foundation, no visible change yet)
+2. Language picker UI + accessibility settings UI
+3. String extraction sweep across Phases 1–7 (largest edit, mostly mechanical)
+4. Full Afrikaans content pass + verification
+
+Reply with "go" to build all four in one pass, or pick a starting chunk.

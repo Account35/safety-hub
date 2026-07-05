@@ -168,3 +168,61 @@
     }
   }
 }
+
+/*
+ * Phase 8: text scaling. Root font-size adjustment propagates through every
+ * `rem`-based size in the design system, so no per-component change is
+ * needed. Values match ACCESSIBILITY_PREFERENCES.text_scale_factor.
+ */
+html[data-scale="1.25"] { font-size: 1.25rem; }
+html[data-scale="1.5"]  { font-size: 1.5rem; }
+html[data-scale="2"]    { font-size: 2rem; }
+
+/*
+ * Phase 8: high-contrast mode. Overrides Phase 1 design tokens with a
+ * WCAG AAA-safe palette. Because the entire app reads from these tokens,
+ * flipping this attribute re-themes every screen at once.
+ */
+html[data-contrast="high"] {
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.18 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.15 0 0);
+  --muted-foreground: oklch(0.92 0 0);
+  --accent: oklch(0.95 0.18 95);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.68 0.28 27);
+  --destructive-foreground: oklch(0 0 0);
+  --border: oklch(1 0 0);
+  --input: oklch(1 0 0 / 30%);
+  --ring: oklch(0.95 0.18 95);
+  --sidebar: oklch(0 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.95 0.18 95);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --sidebar-accent: oklch(0.15 0 0);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(1 0 0);
+  --sidebar-ring: oklch(0.95 0.18 95);
+}
+
+/*
+ * Phase 8: reduce-motion opt-in via user setting (mirrors the OS media query
+ * above so the effect is identical whether the user set it in their profile
+ * or in the OS).
+ */
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}

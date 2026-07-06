@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PasswordChangeForm } from "@/components/password-change-form";
+import { AccessibilitySettings } from "@/components/accessibility-settings";
 import { getPrivacySettings, updatePrivacySettings, changePassword, deleteAccount } from "@/lib/profile.functions";
 import type { PrivacySettings } from "@/lib/profile.functions";
 import { useAuth } from "@/lib/auth-context";
@@ -133,7 +134,11 @@ function PrivacySecurityPage() {
       </Card>
 
       {/* ── Account Security ──────────────────────────────────── */}
+      <AccessibilitySettings />
+
       <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Account Security</h2>
+
+      {/* Accessibility settings live above account security so they're easy to find */}
 
       <Card className="mb-4">
         <CardContent className="p-4">

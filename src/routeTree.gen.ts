@@ -22,6 +22,7 @@ import { Route as ProfileRewardsRouteImport } from './routes/profile.rewards'
 import { Route as ProfileReportsRouteImport } from './routes/profile.reports'
 import { Route as ProfilePrivacySecurityRouteImport } from './routes/profile.privacy-security'
 import { Route as ProfileNotificationsRouteImport } from './routes/profile.notifications'
+import { Route as ProfileLanguageRouteImport } from './routes/profile.language'
 import { Route as ChatsIdRouteImport } from './routes/chats.$id'
 import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as CasesMissingRouteImport } from './routes/cases.missing'
@@ -96,6 +97,11 @@ const ProfileNotificationsRoute = ProfileNotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => ProfileRoute,
 } as any)
+const ProfileLanguageRoute = ProfileLanguageRouteImport.update({
+  id: '/language',
+  path: '/language',
+  getParentRoute: () => ProfileRoute,
+} as any)
 const ChatsIdRoute = ChatsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/chats/$id': typeof ChatsIdRoute
+  '/profile/language': typeof ProfileLanguageRoute
   '/profile/notifications': typeof ProfileNotificationsRoute
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/chats/$id': typeof ChatsIdRoute
+  '/profile/language': typeof ProfileLanguageRoute
   '/profile/notifications': typeof ProfileNotificationsRoute
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
   '/chats/$id': typeof ChatsIdRoute
+  '/profile/language': typeof ProfileLanguageRoute
   '/profile/notifications': typeof ProfileNotificationsRoute
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/cases/missing'
     | '/cases/wanted'
     | '/chats/$id'
+    | '/profile/language'
     | '/profile/notifications'
     | '/profile/privacy-security'
     | '/profile/reports'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/cases/missing'
     | '/cases/wanted'
     | '/chats/$id'
+    | '/profile/language'
     | '/profile/notifications'
     | '/profile/privacy-security'
     | '/profile/reports'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/cases/missing'
     | '/cases/wanted'
     | '/chats/$id'
+    | '/profile/language'
     | '/profile/notifications'
     | '/profile/privacy-security'
     | '/profile/reports'
@@ -398,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileNotificationsRouteImport
       parentRoute: typeof ProfileRoute
     }
+    '/profile/language': {
+      id: '/profile/language'
+      path: '/language'
+      fullPath: '/profile/language'
+      preLoaderRoute: typeof ProfileLanguageRouteImport
+      parentRoute: typeof ProfileRoute
+    }
     '/chats/$id': {
       id: '/chats/$id'
       path: '/$id'
@@ -486,6 +505,7 @@ const ChatsRouteChildren: ChatsRouteChildren = {
 const ChatsRouteWithChildren = ChatsRoute._addFileChildren(ChatsRouteChildren)
 
 interface ProfileRouteChildren {
+  ProfileLanguageRoute: typeof ProfileLanguageRoute
   ProfileNotificationsRoute: typeof ProfileNotificationsRoute
   ProfilePrivacySecurityRoute: typeof ProfilePrivacySecurityRoute
   ProfileReportsRoute: typeof ProfileReportsRoute
@@ -493,6 +513,7 @@ interface ProfileRouteChildren {
 }
 
 const ProfileRouteChildren: ProfileRouteChildren = {
+  ProfileLanguageRoute: ProfileLanguageRoute,
   ProfileNotificationsRoute: ProfileNotificationsRoute,
   ProfilePrivacySecurityRoute: ProfilePrivacySecurityRoute,
   ProfileReportsRoute: ProfileReportsRoute,

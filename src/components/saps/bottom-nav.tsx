@@ -1,19 +1,20 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Search, AlertTriangle, Activity, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { t } from "@/lib/i18n/en";
+import { useTranslation } from "@/lib/i18n/i18n-context";
 import { useEffect, useState } from "react";
 import { getTotalUnread } from "@/lib/chat-utils";
 
 const items = [
-  { to: "/", label: t.nav.home, icon: Home },
-  { to: "/cases", label: t.nav.cases, icon: Search },
-  { to: "/report", label: t.nav.report, icon: AlertTriangle },
-  { to: "/activity", label: t.nav.activity, icon: Activity },
-  { to: "/profile", label: t.nav.profile, icon: User },
+  { to: "/", key: "nav.home", icon: Home },
+  { to: "/cases", key: "nav.cases", icon: Search },
+  { to: "/report", key: "nav.report", icon: AlertTriangle },
+  { to: "/activity", key: "nav.activity", icon: Activity },
+  { to: "/profile", key: "nav.profile", icon: User },
 ] as const;
 
 export function BottomNav() {
+  const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [unread, setUnread] = useState(0);
 
@@ -54,7 +55,7 @@ export function BottomNav() {
                     </span>
                   )}
                 </div>
-                <span>{item.label}</span>
+                <span>{t(item.key)}</span>
               </Link>
             </li>
           );

@@ -107,3 +107,12 @@ Zulu/Xhosa/Sotho content, machine translation of report bodies, admin panel tran
 4. Full Afrikaans content pass + verification
 
 Reply with "go" to build all four in one pass, or pick a starting chunk.
+
+---
+
+## Status
+
+- **Chunk 1** ✅ done — migration applied, i18n + a11y contexts, root wiring, CSS overrides.
+- **Chunk 2** ✅ done — `/profile/language` route, accessibility settings card on `/profile/privacy-security`, language + accessibility rows on `/profile`, bottom nav wired to `useTranslation`.
+- **Chunk 3** ⏳ partial — Phase 1–7 hardcoded strings not yet swept. Translation keys for profile / language / a11y / nav / dashboard / auth are covered in `en.ts` + `af.ts`; remaining screens (report flow, cases, chats, campaigns, activity) still render English literals. Swap per file as encountered — mechanical `useTranslation()` + `t("…")` replacements against the existing dictionaries; add new keys as needed.
+- **Chunk 4** ⏳ pending — Afrikaans strings added incrementally alongside Chunk 3.

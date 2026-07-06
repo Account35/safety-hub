@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Shield, FileText, MessageSquare, Bell, Lock, Gift } from "lucide-react";
+import { Shield, FileText, MessageSquare, Bell, Lock, Gift, Languages, Accessibility, ChevronRight } from "lucide-react";
 import { PageShell } from "@/components/saps/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,9 @@ import { TOWNSHIPS } from "@/lib/reports/townships";
 import { stripExifToDataUrl } from "@/lib/reports/exif-strip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/i18n/i18n-context";
+import { getLanguage } from "@/lib/i18n/registry";
+import { useAccessibility } from "@/lib/accessibility/accessibility-context";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "My Profile · Community Safety Tracker" }] }),
@@ -69,6 +72,10 @@ function GuestPrompt() {
 function AuthenticatedProfile() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { language, t } = useTranslation();
+  const a11y = useAccessibility();
+  const a11yCustomized =
+    a11y.high_contrast_enabled || a11y.text_scale_factor !== 1 || a11y.reduce_motion_enabled;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [unread] = useState(() => getTotalUnread());
@@ -238,6 +245,36 @@ function AuthenticatedProfile() {
             : <p className="text-xs text-muted-foreground">View reward eligibility</p>}
         </div>
       </Link>
+
+      {/* Language + Accessibility rows */}
+      <div className="rounded-xl border border-border bg-card mb-6 divide-y divide-border">
+        <Link
+          to="/profile/language"
+          className="flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors focus-visible:outline-2 rounded-t-xl"
+          style={{ minHeight: 56 }}
+        >
+          <Languages className="size-5 text-primary shrink-0" aria-hidden="true" />
+          <div className="flex-1">
+            <div className="text-sm font-semibold">{t("profile.language")}</div>
+          </div>
+          <span className="text-sm text-muted-foreground">{getLanguage(language).name_native}</span>
+          <ChevronRight className="size-4 text-muted-foreground" aria-hidden="true" />
+        </Link>
+        <Link
+          to="/profile/privacy-security"
+          className="flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors focus-visible:outline-2 rounded-b-xl"
+          style={{ minHeight: 56 }}
+        >
+          <Accessibility className="size-5 text-primary shrink-0" aria-hidden="true" />
+          <div className="flex-1">
+            <div className="text-sm font-semibold">{t("profile.accessibility")}</div>
+            {a11yCustomized && (
+              <div className="text-xs text-accent">{t("profile.accessibilitySummary")}</div>
+            )}
+          </div>
+          <ChevronRight className="size-4 text-muted-foreground" aria-hidden="true" />
+        </Link>
+      </div>
 
       <Button variant="outline" className="w-full" onClick={async () => { await signOut(); navigate({ to: "/" }); }}>
         Sign Out

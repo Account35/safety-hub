@@ -134,6 +134,8 @@ function PrivacySecurityPage() {
       </Card>
 
       {/* ── Account Security ──────────────────────────────────── */}
+      <AccessibilitySettings />
+
       <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Account Security</h2>
 
       {/* Accessibility settings live above account security so they're easy to find */}

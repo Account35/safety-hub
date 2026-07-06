@@ -136,6 +136,8 @@ function PrivacySecurityPage() {
       {/* ── Account Security ──────────────────────────────────── */}
       <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Account Security</h2>
 
+      {/* Accessibility settings live above account security so they're easy to find */}
+
       <Card className="mb-4">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">

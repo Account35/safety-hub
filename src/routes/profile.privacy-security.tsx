@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PasswordChangeForm } from "@/components/password-change-form";
+import { AccessibilitySettings } from "@/components/accessibility-settings";
 import { getPrivacySettings, updatePrivacySettings, changePassword, deleteAccount } from "@/lib/profile.functions";
 import type { PrivacySettings } from "@/lib/profile.functions";
 import { useAuth } from "@/lib/auth-context";

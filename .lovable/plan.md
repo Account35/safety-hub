@@ -1,118 +1,63 @@
+# Feature Audit & Gap Analysis — Community Safety Tracker
 
-# Phase 8 — Multilingual Support & Accessibility
+## Summary
 
-Delivers a runtime i18n system (English `en-ZA` + Afrikaans `af-ZA`), a language picker in Profile settings, high-contrast mode, four-level text scaling, and reduce-motion — all inherited by every existing screen with no layout rebuilds.
+Roughly **70% of the defined scope is built**. The citizen-facing product (auth, cases, reporting, chat, rewards, profile, campaigns, multilingual/accessibility) is largely complete. The **entire police/admin side is missing**, along with several dashboard "awareness" widgets.
 
-Aligned with the user's pragmatic-phased preference: **translations stored as bundled JSON files in the client, not in the database**. The DB only stores the user's chosen language + accessibility prefs. This avoids a `TRANSLATIONS` table with thousands of rows on the read path of every page. Future languages are added by dropping a new JSON file and toggling `is_active` in a small registry.
+## Implemented
 
----
+| Scope area | Status | Where it lives |
+| --- | --- | --- |
+| SAPS branding, mobile-first shell, bottom nav | FULL | `src/styles.css`, `components/saps/page-shell.tsx`, `header.tsx`, `bottom-nav.tsx` |
+| Guest + registered auth, profile page | FULL | `lib/auth-context.tsx`, `routes/auth.tsx`, `routes/profile.tsx`, `_authenticated/route.tsx` |
+| Dashboard clock + dynamic greeting | FULL | `components/saps/dashboard-widgets.tsx` (`TimeAndGreeting`) |
+| Approximate location / area indicator | PARTIAL | `LocationCard` — free-text area only, not the Phase 3 township list |
+| Wanted & missing galleries, filters, detail views | FULL (grid, not carousel) | `routes/cases.*`, `components/cases/*` |
+| Report Sighting + Share on detail views | FULL | `components/cases/share-button.tsx`, `lib/reports/navigation.ts` |
+| Multi-channel reporting wizard (text/voice/photo) | FULL | `routes/report.tsx`, `components/report/*` |
+| Safety warnings (red wanted / gentle missing) | FULL | `components/report/safety-modal.tsx` |
+| EXIF stripping + location fuzzing | FULL | `lib/reports/exif-strip.ts`, `lib/reports/fuzz.ts` |
+| Anonymous two-way chat with reference codes | PARTIAL | `routes/chats.tsx`, `chats.$id.tsx`, `components/chat-*` — no quick-reply templates |
+| Rewards claim via reference code + report history | PARTIAL | `routes/profile.rewards.tsx`, `profile.reports.tsx` — no leaderboard |
+| AI analysis, clustering, SAPS campaigns | FULL (beyond scope) | `lib/ai/*`, `lib/campaigns/*`, `routes/campaigns.*` |
+| Multilingual (EN/AF) + accessibility | FULL | `lib/i18n/*`, `lib/accessibility/*`, `routes/profile.language.tsx` |
 
-## 1. Data model (minimal DB footprint)
+## Missing or incomplete
 
-Migration adds two tables + extends `profiles`:
+1. **Weather widget** (dashboard) — MISSING. Needs a server function calling a weather API keyed on the user's township, plus a card in `dashboard-widgets.tsx`. Depends on the location indicator.
+2. **News ticker** (dashboard) — MISSING. Can reuse existing `campaigns` rows as the feed source; needs a marquee component respecting reduce-motion.
+3. **Safety tips carousel** — MISSING. `components/ui/carousel.tsx` exists but is unused. Content can come from `campaigns` where `campaign_type = 'safety_tip'`.
+4. **Crime statistics modal** — MISSING. No stats source, no aggregation function, no modal. Needs a `crime_stats` table (or aggregation over cases by township) plus filters and a "last updated" stamp.
+5. **Police station finder** — INCOMPLETE. `StationCard` is hardcoded to "Johannesburg Central SAPS". Needs a `police_stations` table (name, address, phone, township, lat/lng), a nearest-station lookup from the approximate area, and a stations list route.
+6. **Real-time admin alert dashboard** — MISSING. No admin routes exist. `user_roles` + `has_role()` are already in place; needs an `/admin` gated layout, a realtime reports feed, priority flagging (red wanted / blue missing), and status transitions writing back to `reports.status`.
+7. **Admin case management (CRUD, bulk upload, heatmaps)** — MISSING. `wanted_persons` / `missing_persons` are read-only to clients; needs admin-only write policies, create/edit/archive forms, CSV bulk upload, and a heatmap over report locations.
+8. **Chat quick-reply templates** — MISSING. Small addition to `components/chat-input.tsx` for the officer side.
+9. **Rewards leaderboard** — MISSING. Needs an anonymous, reference-code-based aggregation so no identity is exposed.
+10. **Carousel presentation on the dashboard** — INCOMPLETE. Scope asks for horizontal scrollable case carousels on the home screen; today only full-page grids exist.
 
-- `profiles.language_preference text default 'en-ZA'` (add column if missing)
-- `public.accessibility_preferences`
-  - `user_id uuid pk references auth.users on delete cascade`
-  - `high_contrast_enabled bool default false`
-  - `text_scale_factor numeric default 1.0` (constrained to 1.0, 1.25, 1.5, 2.0)
-  - `reduce_motion_enabled bool default false`
-  - RLS: user reads/writes their own row only.
-- `public.translation_fallback_log` (monitoring — insert-only from client for missing keys)
-  - `translation_key text`, `language_code text`, `logged_at timestamptz default now()`
-  - RLS: authenticated may INSERT; SELECT restricted to `admin` role via `has_role`.
+## Technical notes
 
-Language registry lives in code (`src/lib/i18n/registry.ts`) — no DB table. It's a tiny static list; putting it in Postgres just costs a round-trip.
+- Admin work is the largest remaining block and the only part needing new write policies: every admin write must go through `public.has_role(auth.uid(), 'admin')`, never a role column on `profiles`.
+- The heatmap must use `reports.location_approximate` (already fuzzed) — never raw coordinates.
+- Weather is the only feature requiring an external API key; everything else can be served from existing or new tables.
+- Reduce-motion must gate the ticker and any carousel auto-slide via the existing `AccessibilityProvider`.
 
-## 2. Translation infrastructure (`src/lib/i18n/`)
+## Recommended next step
+
+Build the **admin panel foundation + real-time report alert feed** — the single largest gap, and it unblocks case management, status tracking, and officer-side chat.
+
+Suggested next prompt:
 
 ```text
-src/lib/i18n/
-├── registry.ts        # LANGUAGES = [{ code: 'en-ZA', ... }, { code: 'af-ZA', ... }]
-├── en.ts              # existing — extend to full coverage
-├── af.ts              # new — full Afrikaans strings
-├── types.ts           # TranslationKey union derived from en.ts shape
-├── i18n-context.tsx   # Provider: current lang, setLang, t(key, vars), plural()
-└── use-translation.ts # hook wrapper
+Build the SAPS Admin Panel foundation and real-time report alert feed.
+Add an /admin route group gated by public.has_role(auth.uid(), 'admin') (with
+'detective'/'analyst' read access), redirecting everyone else. Inside it, build a
+live report feed subscribed to realtime inserts on reports: newest first, red
+left-border for wanted cases and blue for missing, showing reference number,
+township, reporting methods, AI quality score from report_ai_analysis, and
+relative submission time. Add filter chips for New / Under Review / Being
+Investigated / Case Resolved and a status control on each row that updates
+reports.status through an admin-only server function. Include a detail drawer
+with the full report, photos, voice playback, fuzzed location, and a button to
+open or start the anonymous conversation with the reporter.
 ```
-
-- **Keys**: nested object matching dot-notation (`t('reporting.safetyWarning.heading')`). English is the source of truth; `af.ts` mirrors its shape and is type-checked against it.
-- **Interpolation**: `{{userName}}` replaced at render.
-- **Plurals**: `t.plural('profile.reports.count', n)` picks `_zero | _one | _many`.
-- **Fallback**: missing af-ZA key → return en-ZA + fire-and-forget insert into `translation_fallback_log` (debounced/dedup'd in memory).
-- **Load**: both bundled statically; language switch is a state change, no network fetch. Sub-second switching is trivial.
-- **Persistence**: authenticated → `profiles.language_preference`; guest → `localStorage['cst_language_preference']`. On sign-up, migrate guest value into profile.
-
-## 3. Language selection UI
-
-Row added to `src/routes/profile.tsx` (above notification settings) labelled `Language / Taal` with current language on the right. Tapping opens `src/routes/profile.language.tsx` — list of active languages showing English name, native name, completion badge, gold check on current. Selection saves + shows toast in the *new* language.
-
-## 4. Screen wiring (Prompt 3)
-
-Sweep Phases 1–7 route/component files and replace hardcoded citizen-facing strings with `t('…')`. No layout changes. Explicitly skipped:
-- Admin routes (none exist yet — Phase 9)
-- User-generated data (case descriptions, chat messages, campaign body content)
-- Proper nouns (bank names, `RPT-…` reference IDs)
-
-Special care:
-- **Safety warning** (`src/components/report/safety-modal.tsx`): translated body/labels; mandatory checkbox behaviour unchanged.
-- **"ARMED AND DANGEROUS"** (wanted detail): translated, same red/uppercase/bold visual weight.
-- **"SAPS Officer"** → **"SAPD-Beampte"** in Afrikaans across chat surfaces.
-
-## 5. Accessibility (Prompt 4)
-
-All driven off CSS variables and root font size — every existing screen inherits automatically.
-
-- **High contrast**: `html[data-contrast="high"]` overrides in `src/styles.css` remapping `--background`, `--foreground`, `--primary`, `--accent`, `--destructive`, etc., to WCAG AAA-safe values.
-- **Text scale**: `html[data-scale="1.25|1.5|2"]` sets `font-size` on `:root`. Since shadcn/Tailwind sizes are rem-based, everything scales.
-- **Reduce motion**: `html[data-reduce-motion="true"]` disables/instantifies transitions and animations project-wide via a small utility block; auto-init from `matchMedia('(prefers-reduced-motion: reduce)')` on first load.
-- Settings UI added to `src/routes/profile.privacy-security.tsx` (toggle + radio group + live preview swatch/sentence). Server function saves to `accessibility_preferences`; guest values in `localStorage` under `cst_high_contrast`, `cst_text_scale`, `cst_reduce_motion`.
-- **Accessibility summary card** on `profile.tsx` when any pref ≠ default.
-
-Applied at boot in `__root.tsx` via a small `AccessibilityProvider` that sets `data-*` attributes on `<html>` from prefs.
-
-## 6. Verification (Prompt 5)
-
-- Type-level guarantee: `af.ts` must satisfy the type derived from `en.ts` — TS build fails on missing keys, so 100% coverage is enforced at compile time (no runtime audit needed).
-- Manual smoke script: log fallback events; expect zero during the Afrikaans test path.
-- Confirm `_authenticated/` routes and (future) admin routes are not wrapped by the i18n `t()` calls — only citizen-facing text is translated.
-- CSS logical properties note: keep existing utilities; no RTL work needed for SA languages.
-
-## 7. Deliverables (file map)
-
-New:
-- `supabase/migrations/<ts>_phase8_i18n_a11y.sql`
-- `src/lib/i18n/registry.ts`, `af.ts`, `types.ts`, `i18n-context.tsx`, `use-translation.ts`
-- `src/lib/accessibility/accessibility-context.tsx`, `accessibility.functions.ts`
-- `src/routes/profile.language.tsx`
-- Extend `src/lib/i18n/en.ts` to full key coverage
-
-Edited (wiring only, no layout changes):
-- `src/routes/__root.tsx` (providers + `data-*` attributes)
-- `src/routes/profile.tsx` (language row + a11y summary)
-- `src/routes/profile.privacy-security.tsx` (accessibility section)
-- `src/styles.css` (high-contrast + scale + reduce-motion blocks)
-- Phase 1–7 route/component files: replace hardcoded strings with `t(...)`
-
-## 8. Out of scope (per spec)
-
-Zulu/Xhosa/Sotho content, machine translation of report bodies, admin panel translation, sign language, voice nav, RTL layouts.
-
----
-
-**Suggested execution order** if you'd like to split this into approvable chunks:
-1. Migration + i18n scaffold + accessibility CSS/context (foundation, no visible change yet)
-2. Language picker UI + accessibility settings UI
-3. String extraction sweep across Phases 1–7 (largest edit, mostly mechanical)
-4. Full Afrikaans content pass + verification
-
-Reply with "go" to build all four in one pass, or pick a starting chunk.
-
----
-
-## Status
-
-- **Chunk 1** ✅ done — migration applied, i18n + a11y contexts, root wiring, CSS overrides.
-- **Chunk 2** ✅ done — `/profile/language` route, accessibility settings card on `/profile/privacy-security`, language + accessibility rows on `/profile`, bottom nav wired to `useTranslation`.
-- **Chunk 3** ⏳ partial — Phase 1–7 hardcoded strings not yet swept. Translation keys for profile / language / a11y / nav / dashboard / auth are covered in `en.ts` + `af.ts`; remaining screens (report flow, cases, chats, campaigns, activity) still render English literals. Swap per file as encountered — mechanical `useTranslation()` + `t("…")` replacements against the existing dictionaries; add new keys as needed.
-- **Chunk 4** ⏳ pending — Afrikaans strings added incrementally alongside Chunk 3.

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StationsRouteImport } from './routes/stations'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ChatsRouteImport } from './routes/chats'
@@ -33,6 +34,11 @@ import { Route as CasesMissingIdRouteImport } from './routes/cases.missing.$id'
 import { Route as ApiPublicHooksClusterSweepRouteImport } from './routes/api/public/hooks/cluster-sweep'
 import { Route as ApiPublicHooksCampaignDispatchRouteImport } from './routes/api/public/hooks/campaign-dispatch'
 
+const StationsRoute = StationsRouteImport.update({
+  id: '/stations',
+  path: '/stations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/chats': typeof ChatsRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
+  '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/chats': typeof ChatsRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
+  '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/chats': typeof ChatsRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
+  '/stations': typeof StationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
@@ -233,6 +242,7 @@ export interface FileRouteTypes {
     | '/chats'
     | '/profile'
     | '/report'
+    | '/stations'
     | '/dashboard'
     | '/campaigns/$id'
     | '/cases/missing'
@@ -257,6 +267,7 @@ export interface FileRouteTypes {
     | '/chats'
     | '/profile'
     | '/report'
+    | '/stations'
     | '/dashboard'
     | '/campaigns/$id'
     | '/cases/missing'
@@ -282,6 +293,7 @@ export interface FileRouteTypes {
     | '/chats'
     | '/profile'
     | '/report'
+    | '/stations'
     | '/_authenticated/dashboard'
     | '/campaigns/$id'
     | '/cases/missing'
@@ -308,6 +320,7 @@ export interface RootRouteChildren {
   ChatsRoute: typeof ChatsRouteWithChildren
   ProfileRoute: typeof ProfileRouteWithChildren
   ReportRoute: typeof ReportRoute
+  StationsRoute: typeof StationsRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
   CasesMissingRoute: typeof CasesMissingRouteWithChildren
   CasesWantedRoute: typeof CasesWantedRouteWithChildren
@@ -319,6 +332,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stations': {
+      id: '/stations'
+      path: '/stations'
+      fullPath: '/stations'
+      preLoaderRoute: typeof StationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/report': {
       id: '/report'
       path: '/report'
@@ -555,6 +575,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatsRoute: ChatsRouteWithChildren,
   ProfileRoute: ProfileRouteWithChildren,
   ReportRoute: ReportRoute,
+  StationsRoute: StationsRoute,
   CampaignsIdRoute: CampaignsIdRoute,
   CasesMissingRoute: CasesMissingRouteWithChildren,
   CasesWantedRoute: CasesWantedRouteWithChildren,

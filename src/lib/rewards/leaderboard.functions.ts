@@ -34,7 +34,7 @@ export const getRewardLeaderboard = createServerFn({ method: "GET" }).handler(
     const { data: rows, error } = await supabaseAdmin
       .from("reward_eligibility")
       .select("reward_amount, eligibility_status, reports!inner(reporter_id, reporter_anon_code)")
-      .in("eligibility_status", ["claimed", "paid"])
+      .eq("eligibility_status", "claimed")
       .limit(1000);
     if (error) throw new Error(error.message);
 

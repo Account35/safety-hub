@@ -41,7 +41,7 @@ function iconFor(code: number, isDay: boolean) {
 export function WeatherCard() {
   const { profile } = useAuth();
   const weatherFn = useServerFn(getAreaWeather);
-  const area = profile?.primary_township ?? profile?.area ?? null;
+  const area = profile?.area ?? null;
 
   const { data, isLoading } = useQuery({
     queryKey: ["area-weather", area],

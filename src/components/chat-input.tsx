@@ -6,6 +6,7 @@ import { scanForPii, isContactRequest } from "@/lib/chat-privacy";
 import { ChatPiiWarningModal } from "@/components/chat-pii-warning";
 import { cn } from "@/lib/utils";
 import { stripExifToDataUrl } from "@/lib/reports/exif-strip";
+import { QUICK_REPLIES } from "@/lib/chat-quick-replies";
 
 const MAX_CHARS = 500;
 const RATE_LIMIT = 10;
@@ -87,6 +88,7 @@ export function ChatInput({ onSend, disabled, lastOfficerMessage, messageCount }
 
   const remaining = MAX_CHARS - text.length;
   const canSend = text.trim().length > 0 && !disabled;
+  const showQuickReplies = !disabled && text.trim().length === 0;
 
   return (
     <div className="border-t border-primary bg-background">
@@ -111,6 +113,24 @@ export function ChatInput({ onSend, disabled, lastOfficerMessage, messageCount }
       {rateLimitMsg && (
         <div className="bg-amber-50 border-b border-amber-200 text-amber-800 text-xs px-3 py-2">
           {rateLimitMsg}
+        </div>
+      )}
+      {showQuickReplies && (
+        <div
+          className="flex gap-2 overflow-x-auto px-2 pt-2"
+          role="group"
+          aria-label="Quick replies"
+        >
+          {QUICK_REPLIES.map((reply) => (
+            <button
+              key={reply}
+              type="button"
+              onClick={() => attemptSend(reply)}
+              className="shrink-0 rounded-full border border-primary/40 bg-secondary px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+            >
+              {reply}
+            </button>
+          ))}
         </div>
       )}
       <div className="flex items-end gap-2 p-2">

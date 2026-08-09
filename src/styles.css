@@ -226,3 +226,13 @@ html[data-reduce-motion="true"] *::after {
   transition-duration: 0.001ms !important;
   scroll-behavior: auto !important;
 }
+
+/* Dashboard news ticker marquee (paused/replaced when reduce-motion is on). */
+@keyframes saps-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

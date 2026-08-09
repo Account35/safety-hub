@@ -195,6 +195,39 @@ export type Database = {
           },
         ]
       }
+      crime_stats: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          incident_count: number
+          period_label: string
+          township: string
+          trend: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          incident_count?: number
+          period_label?: string
+          township: string
+          trend?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          incident_count?: number
+          period_label?: string
+          township?: string
+          trend?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           attachment_reference: string | null
@@ -368,6 +401,48 @@ export type Database = {
           report_status_notifications?: boolean
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      police_stations: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          is_24_hour: boolean
+          lat: number
+          lng: number
+          name: string
+          phone: string | null
+          province: string | null
+          township: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          is_24_hour?: boolean
+          lat: number
+          lng: number
+          name: string
+          phone?: string | null
+          province?: string | null
+          township: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          is_24_hour?: boolean
+          lat?: number
+          lng?: number
+          name?: string
+          phone?: string | null
+          province?: string | null
+          township?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -598,6 +673,125 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_claims: {
+        Row: {
+          claim_id: string
+          claim_status: Database["public"]["Enums"]["claim_status"]
+          created_at: string
+          eligibility_id: string
+          id: string
+          identity_confirmation: Json
+          paid_at: string | null
+          payment_details: Json
+          payment_method: Database["public"]["Enums"]["payment_method_type"]
+          rejection_reason: string | null
+          report_id: string
+          reporter_anon_code: string
+          reward_amount: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          claim_id: string
+          claim_status?: Database["public"]["Enums"]["claim_status"]
+          created_at?: string
+          eligibility_id: string
+          id?: string
+          identity_confirmation?: Json
+          paid_at?: string | null
+          payment_details?: Json
+          payment_method: Database["public"]["Enums"]["payment_method_type"]
+          rejection_reason?: string | null
+          report_id: string
+          reporter_anon_code: string
+          reward_amount?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          claim_id?: string
+          claim_status?: Database["public"]["Enums"]["claim_status"]
+          created_at?: string
+          eligibility_id?: string
+          id?: string
+          identity_confirmation?: Json
+          paid_at?: string | null
+          payment_details?: Json
+          payment_method?: Database["public"]["Enums"]["payment_method_type"]
+          rejection_reason?: string | null
+          report_id?: string
+          reporter_anon_code?: string
+          reward_amount?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_claims_eligibility_id_fkey"
+            columns: ["eligibility_id"]
+            isOneToOne: false
+            referencedRelation: "reward_eligibility"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_claims_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reward_eligibility: {
+        Row: {
+          case_id: string
+          case_type: string
+          claim_deadline: string | null
+          created_at: string
+          eligibility_status: Database["public"]["Enums"]["eligibility_status"]
+          id: string
+          report_id: string
+          reporter_anon_code: string
+          reporter_id: string | null
+          reward_amount: number
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          case_type: string
+          claim_deadline?: string | null
+          created_at?: string
+          eligibility_status?: Database["public"]["Enums"]["eligibility_status"]
+          id?: string
+          report_id: string
+          reporter_anon_code: string
+          reporter_id?: string | null
+          reward_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          case_type?: string
+          claim_deadline?: string | null
+          created_at?: string
+          eligibility_status?: Database["public"]["Enums"]["eligibility_status"]
+          id?: string
+          report_id?: string
+          reporter_anon_code?: string
+          reporter_id?: string | null
+          reward_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_eligibility_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       townships_ref: {
         Row: {
           name: string
@@ -785,6 +979,7 @@ export type Database = {
         | "wanted_person_alert"
         | "general_announcement"
       case_status: "active" | "found" | "closed"
+      claim_status: "submitted" | "verifying" | "approved" | "paid" | "rejected"
       cluster_confidence: "high" | "medium"
       cluster_role: "primary" | "supporting"
       danger_level: "high" | "medium" | "low"
@@ -794,6 +989,8 @@ export type Database = {
         | "endangered"
         | "medical"
         | "unknown"
+      eligibility_status: "eligible" | "claimed" | "expired"
+      payment_method_type: "bank_transfer" | "mobile_money" | "cash_pickup"
       quality_tier: "detailed" | "standard" | "limited"
     }
     CompositeTypes: {
@@ -941,6 +1138,7 @@ export const Constants = {
         "general_announcement",
       ],
       case_status: ["active", "found", "closed"],
+      claim_status: ["submitted", "verifying", "approved", "paid", "rejected"],
       cluster_confidence: ["high", "medium"],
       cluster_role: ["primary", "supporting"],
       danger_level: ["high", "medium", "low"],
@@ -951,6 +1149,8 @@ export const Constants = {
         "medical",
         "unknown",
       ],
+      eligibility_status: ["eligible", "claimed", "expired"],
+      payment_method_type: ["bank_transfer", "mobile_money", "cash_pickup"],
       quality_tier: ["detailed", "standard", "limited"],
     },
   },

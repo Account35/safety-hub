@@ -6,6 +6,10 @@ import {
   ActionGrid,
   StationCard,
 } from "@/components/saps/dashboard-widgets";
+import { WeatherCard } from "@/components/saps/weather-card";
+import { NewsTicker } from "@/components/saps/news-ticker";
+import { SafetyTipsCarousel } from "@/components/saps/safety-tips-carousel";
+import { CaseCarousels } from "@/components/saps/case-carousels";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,6 +25,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Browse cases and report sightings safely.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Index,
@@ -31,8 +37,14 @@ function Index() {
     <PageShell>
       <div className="space-y-6">
         <TimeAndGreeting />
-        <LocationCard />
+        <NewsTicker />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <LocationCard />
+          <WeatherCard />
+        </div>
         <ActionGrid />
+        <CaseCarousels />
+        <SafetyTipsCarousel />
         <StationCard />
       </div>
     </PageShell>

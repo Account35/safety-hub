@@ -6,6 +6,10 @@ import {
   ActionGrid,
   StationCard,
 } from "@/components/saps/dashboard-widgets";
+import { WeatherCard } from "@/components/saps/weather-card";
+import { NewsTicker } from "@/components/saps/news-ticker";
+import { SafetyTipsCarousel } from "@/components/saps/safety-tips-carousel";
+import { CaseCarousels } from "@/components/saps/case-carousels";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -22,8 +26,14 @@ function DashboardPage() {
     <PageShell>
       <div className="space-y-6">
         <TimeAndGreeting />
-        <LocationCard />
+        <NewsTicker />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <LocationCard />
+          <WeatherCard />
+        </div>
         <ActionGrid />
+        <CaseCarousels />
+        <SafetyTipsCarousel />
         <StationCard />
       </div>
     </PageShell>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   MapPin,
   Shield,
@@ -10,6 +12,7 @@ import {
   FileText,
   Gift,
   MessageSquare,
+  Navigation,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +22,8 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { t } from "@/lib/i18n/en";
+import { listStations } from "@/lib/dashboard/dashboard.functions";
+import { CrimeStatsModal } from "@/components/saps/crime-stats-modal";
 
 function greetingFor(date: Date) {
   const h = date.getHours();
@@ -254,31 +259,77 @@ export function ActionGrid() {
 }
 
 export function StationCard() {
+  const { profile } = useAuth();
+  const stationsFn = useServerFn(listStations);
+  const area = profile?.area ?? null;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["nearest-station", area],
+    queryFn: () => stationsFn({ data: { area, limit: 1 } }),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const station = data?.stations[0];
+
   return (
     <Card>
-      <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <span
-            aria-hidden="true"
-            className="grid size-11 place-items-center rounded-md bg-primary text-primary-foreground"
-          >
-            <Shield className="size-5" />
-          </span>
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              {t.dashboard.nearestStation}
-            </p>
-            <p className="font-semibold">Johannesburg Central SAPS</p>
-            <p className="text-sm text-muted-foreground">
-              1 Commissioner St · 24-hour service
-            </p>
+      <CardContent className="flex flex-col gap-4 p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span
+              aria-hidden="true"
+              className="grid size-11 place-items-center rounded-md bg-primary text-primary-foreground"
+            >
+              <Shield className="size-5" />
+            </span>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                {t.dashboard.nearestStation}
+              </p>
+              {isLoading ? (
+                <p className="font-semibold text-muted-foreground">Finding your station…</p>
+              ) : station ? (
+                <>
+                  <p className="font-semibold">{station.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {station.address}
+                    {station.is_24_hour ? " · 24-hour service" : ""}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                    <Navigation className="size-3" aria-hidden="true" />
+                    approx. {station.distanceKm} km from {data?.areaLabel}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Station directory unavailable right now.
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {station?.phone && (
+              <Button asChild variant="outline" className="gap-2">
+                <a href={`tel:${station.phone.replace(/\s+/g, "")}`} aria-label={`Call ${station.name}`}>
+                  <Phone className="size-4" /> {station.phone}
+                </a>
+              </Button>
+            )}
+            <Button asChild variant="outline" className="gap-2">
+              <a href="tel:10111" aria-label="Call emergency line 10111">
+                <Phone className="size-4" /> 10111
+              </a>
+            </Button>
           </div>
         </div>
-        <Button asChild variant="outline" className="gap-2">
-          <a href="tel:10111" aria-label="Call emergency line 10111">
-            <Phone className="size-4" /> 10111
-          </a>
-        </Button>
+        <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row">
+          <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
+            <Link to="/stations">
+              <Shield className="size-4" aria-hidden="true" /> All SAPS stations
+            </Link>
+          </Button>
+          <CrimeStatsModal />
+        </div>
       </CardContent>
     </Card>
   );

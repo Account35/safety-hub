@@ -86,7 +86,7 @@ function ReportsHistoryPage() {
           <FileSearch className="size-14 text-accent" aria-hidden="true" />
           <h2 className="text-lg font-semibold text-primary">No Reports Yet</h2>
           <p className="text-sm text-muted-foreground max-w-xs">When you report information about a wanted or missing person, it will appear here.</p>
-          <Button asChild className="bg-accent text-accent-foreground"><Link to="/cases/">Browse Cases</Link></Button>
+          <Button asChild className="bg-accent text-accent-foreground"><Link to="/cases">Browse Cases</Link></Button>
         </div>
       )}
 

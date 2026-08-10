@@ -1,63 +1,54 @@
-# Feature Audit & Gap Analysis — Community Safety Tracker
+# Phase 9 - Admin Panel & Case Management
 
-## Summary
+Staff-facing admin portal under `/admin`, reusing the existing sign-in page and role system. No second login stack, no duplicate citizen screens.
 
-Roughly **70% of the defined scope is built**. The citizen-facing product (auth, cases, reporting, chat, rewards, profile, campaigns, multilingual/accessibility) is largely complete. The **entire police/admin side is missing**, along with several dashboard "awareness" widgets.
+## Access model
 
-## Implemented
+- `/admin/login` is a thin gateway page: if not signed in it links to the existing `/auth` page; if signed in without a staff role it shows "no access"; if staff it forwards to `/admin`.
+- All other `/admin/*` pages sit behind one staff-role gate (detective, analyst, moderator, admin, super_admin), reusing the `requireStaff` check already in the codebase.
+- Permission matrix per screen: analysts read-only analytics and reports; moderators campaigns; detectives reports and cases; admin and super_admin everything, including settings and admin users.
+- Every admin action that changes data writes an immutable audit entry (actor, action, target, details, timestamp).
+- Deferred by your choice: 2FA, backup codes, IP whitelisting, geo restriction, emergency override.
 
-| Scope area | Status | Where it lives |
-| --- | --- | --- |
-| SAPS branding, mobile-first shell, bottom nav | FULL | `src/styles.css`, `components/saps/page-shell.tsx`, `header.tsx`, `bottom-nav.tsx` |
-| Guest + registered auth, profile page | FULL | `lib/auth-context.tsx`, `routes/auth.tsx`, `routes/profile.tsx`, `_authenticated/route.tsx` |
-| Dashboard clock + dynamic greeting | FULL | `components/saps/dashboard-widgets.tsx` (`TimeAndGreeting`) |
-| Approximate location / area indicator | PARTIAL | `LocationCard` — free-text area only, not the Phase 3 township list |
-| Wanted & missing galleries, filters, detail views | FULL (grid, not carousel) | `routes/cases.*`, `components/cases/*` |
-| Report Sighting + Share on detail views | FULL | `components/cases/share-button.tsx`, `lib/reports/navigation.ts` |
-| Multi-channel reporting wizard (text/voice/photo) | FULL | `routes/report.tsx`, `components/report/*` |
-| Safety warnings (red wanted / gentle missing) | FULL | `components/report/safety-modal.tsx` |
-| EXIF stripping + location fuzzing | FULL | `lib/reports/exif-strip.ts`, `lib/reports/fuzz.ts` |
-| Anonymous two-way chat with reference codes | PARTIAL | `routes/chats.tsx`, `chats.$id.tsx`, `components/chat-*` — no quick-reply templates |
-| Rewards claim via reference code + report history | PARTIAL | `routes/profile.rewards.tsx`, `profile.reports.tsx` — no leaderboard |
-| AI analysis, clustering, SAPS campaigns | FULL (beyond scope) | `lib/ai/*`, `lib/campaigns/*`, `routes/campaigns.*` |
-| Multilingual (EN/AF) + accessibility | FULL | `lib/i18n/*`, `lib/accessibility/*`, `routes/profile.language.tsx` |
+## Screens (each exactly one route)
 
-## Missing or incomplete
+| Route | Contents |
+|---|---|
+| `/admin` | Overview: queue counts, open cases, pending claims, recent activity, links into each section |
+| `/admin/login` | Staff gateway described above |
+| `/admin/cases` | Case list with stats, status filter, search, edit/archive/reopen, CSV import |
+| `/admin/cases/new` | Wanted and missing person creation forms (tabbed), photo upload, danger and vulnerability assessment |
+| `/admin/reports` | Priority-ordered review queue: AI quality score, township, age, status, assignee |
+| `/admin/reports/$reportId` | Report detail: text/voice/photo, AI analysis, suggested case matches, anonymous reporter code, assign detective, record outcome, dismiss, open the existing chat thread, evidence and timeline notes |
+| `/admin/rewards` | Eligibility list and claim review: verify, approve, mark paid, reject with reason |
+| `/admin/campaigns` | Campaign list, create and schedule (reuses existing campaign functions), cancel |
+| `/admin/analytics` | Report volume, resolution rate, average investigation duration, engagement, reward totals, CSV export |
+| `/admin/settings` | Case settings, feature flags, notification templates, admin user and role management, searchable audit-log viewer |
 
-1. **Weather widget** (dashboard) — MISSING. Needs a server function calling a weather API keyed on the user's township, plus a card in `dashboard-widgets.tsx`. Depends on the location indicator.
-2. **News ticker** (dashboard) — MISSING. Can reuse existing `campaigns` rows as the feed source; needs a marquee component respecting reduce-motion.
-3. **Safety tips carousel** — MISSING. `components/ui/carousel.tsx` exists but is unused. Content can come from `campaigns` where `campaign_type = 'safety_tip'`.
-4. **Crime statistics modal** — MISSING. No stats source, no aggregation function, no modal. Needs a `crime_stats` table (or aggregation over cases by township) plus filters and a "last updated" stamp.
-5. **Police station finder** — INCOMPLETE. `StationCard` is hardcoded to "Johannesburg Central SAPS". Needs a `police_stations` table (name, address, phone, township, lat/lng), a nearest-station lookup from the approximate area, and a stations list route.
-6. **Real-time admin alert dashboard** — MISSING. No admin routes exist. `user_roles` + `has_role()` are already in place; needs an `/admin` gated layout, a realtime reports feed, priority flagging (red wanted / blue missing), and status transitions writing back to `reports.status`.
-7. **Admin case management (CRUD, bulk upload, heatmaps)** — MISSING. `wanted_persons` / `missing_persons` are read-only to clients; needs admin-only write policies, create/edit/archive forms, CSV bulk upload, and a heatmap over report locations.
-8. **Chat quick-reply templates** — MISSING. Small addition to `components/chat-input.tsx` for the officer side.
-9. **Rewards leaderboard** — MISSING. Needs an anonymous, reference-code-based aggregation so no identity is exposed.
-10. **Carousel presentation on the dashboard** — INCOMPLETE. Scope asks for horizontal scrollable case carousels on the home screen; today only full-page grids exist.
+Cross-phase links only: cases link to `/cases/wanted/$id` and `/cases/missing/$id`, chat links to `/chats/$id`. A shared admin shell with sidebar gives every page back and home navigation.
+
+## Backend work
+
+One migration adds:
+- `admin_audit_log` (actor, action, entity type and id, details JSON, created_at) - insert-only, staff read, no update or delete.
+- `admin_settings` (key/value JSON) for branding, case settings, feature flags, notification templates.
+- New `reports` columns: assigned_to, assigned_at, priority, outcome, outcome_notes; plus extra case statuses for Investigation Ongoing, Hot Lead, Cold Case.
+- GRANTs and staff-only RLS on everything new, via the existing `has_role` function.
 
 ## Technical notes
 
-- Admin work is the largest remaining block and the only part needing new write policies: every admin write must go through `public.has_role(auth.uid(), 'admin')`, never a role column on `profiles`.
-- The heatmap must use `reports.location_approximate` (already fuzzed) — never raw coordinates.
-- Weather is the only feature requiring an external API key; everything else can be served from existing or new tables.
-- Reduce-motion must gate the ticker and any carousel auto-slide via the existing `AccessibilityProvider`.
+- New server-function modules: `src/lib/admin/reports.functions.ts`, `rewards.functions.ts`, `analytics.functions.ts`, `settings.functions.ts`, and `audit.server.ts`. Existing `admin.functions.ts` (overview, case list, upsert, status, bulk upload) is reused and extended with audit writes.
+- Flat route files: `admin.tsx` (shell layout with staff gate and `<Outlet />`), `admin.index.tsx`, `admin.login.tsx`, `admin.cases.tsx`, `admin.cases.new.tsx`, `admin.reports.tsx`, `admin.reports.$reportId.tsx`, `admin.rewards.tsx`, `admin.campaigns.tsx`, `admin.analytics.tsx`, `admin.settings.tsx`.
+- The route gate is UX only; every server function independently re-verifies the staff role.
+- The reports queue uses the realtime subscription already enabled on `reports` for live inserts.
+- SAPS tokens only (navy, gold, red), keyboard-navigable tables, honours existing accessibility preferences and i18n strings.
+- Reporter identity stays hidden: admins see only `reporter_anon_code` and fuzzed location, never user id, email, or exact coordinates.
 
-## Recommended next step
+## Order of work
 
-Build the **admin panel foundation + real-time report alert feed** — the single largest gap, and it unblocks case management, status tracking, and officer-side chat.
-
-Suggested next prompt:
-
-```text
-Build the SAPS Admin Panel foundation and real-time report alert feed.
-Add an /admin route group gated by public.has_role(auth.uid(), 'admin') (with
-'detective'/'analyst' read access), redirecting everyone else. Inside it, build a
-live report feed subscribed to realtime inserts on reports: newest first, red
-left-border for wanted cases and blue for missing, showing reference number,
-township, reporting methods, AI quality score from report_ai_analysis, and
-relative submission time. Add filter chips for New / Under Review / Being
-Investigated / Case Resolved and a status control on each row that updates
-reports.status through an admin-only server function. Include a detail drawer
-with the full report, photos, voice playback, fuzzed location, and a button to
-open or start the anonymous conversation with the reporter.
-```
+1. Migration (audit log, settings, report assignment and outcome fields).
+2. Admin shell, gate, overview, login gateway.
+3. Cases list, create and edit, CSV import.
+4. Reports queue and detail with assignment, outcome, chat link.
+5. Rewards and campaigns admin.
+6. Analytics, settings, audit-log viewer.

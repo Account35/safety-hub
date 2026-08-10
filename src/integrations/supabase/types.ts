@@ -41,6 +41,63 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_roles: string[]
+          created_at: string
+          details: Json
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_roles?: string[]
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_roles?: string[]
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      admin_settings: {
+        Row: {
+          created_at: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       campaign_delivery: {
         Row: {
           campaign_id: string
@@ -592,6 +649,8 @@ export type Database = {
       reports: {
         Row: {
           accuracy_confirmed: boolean
+          assigned_at: string | null
+          assigned_to: string | null
           case_id: string
           case_type: string
           companion_description: string | null
@@ -602,7 +661,10 @@ export type Database = {
           location_landmarks: string[]
           location_privacy_level: string
           location_township: string | null
+          outcome: string | null
+          outcome_notes: string | null
           photos: Json
+          priority: string
           report_id: string
           reporter_anon_code: string
           reporter_id: string | null
@@ -619,6 +681,8 @@ export type Database = {
         }
         Insert: {
           accuracy_confirmed?: boolean
+          assigned_at?: string | null
+          assigned_to?: string | null
           case_id: string
           case_type: string
           companion_description?: string | null
@@ -629,7 +693,10 @@ export type Database = {
           location_landmarks?: string[]
           location_privacy_level?: string
           location_township?: string | null
+          outcome?: string | null
+          outcome_notes?: string | null
           photos?: Json
+          priority?: string
           report_id: string
           reporter_anon_code: string
           reporter_id?: string | null
@@ -646,6 +713,8 @@ export type Database = {
         }
         Update: {
           accuracy_confirmed?: boolean
+          assigned_at?: string | null
+          assigned_to?: string | null
           case_id?: string
           case_type?: string
           companion_description?: string | null
@@ -656,7 +725,10 @@ export type Database = {
           location_landmarks?: string[]
           location_privacy_level?: string
           location_township?: string | null
+          outcome?: string | null
+          outcome_notes?: string | null
           photos?: Json
+          priority?: string
           report_id?: string
           reporter_anon_code?: string
           reporter_id?: string | null
@@ -978,7 +1050,13 @@ export type Database = {
         | "missing_person_alert"
         | "wanted_person_alert"
         | "general_announcement"
-      case_status: "active" | "found" | "closed"
+      case_status:
+        | "active"
+        | "found"
+        | "closed"
+        | "investigating"
+        | "hot_lead"
+        | "cold_case"
       claim_status: "submitted" | "verifying" | "approved" | "paid" | "rejected"
       cluster_confidence: "high" | "medium"
       cluster_role: "primary" | "supporting"
@@ -1137,7 +1215,14 @@ export const Constants = {
         "wanted_person_alert",
         "general_announcement",
       ],
-      case_status: ["active", "found", "closed"],
+      case_status: [
+        "active",
+        "found",
+        "closed",
+        "investigating",
+        "hot_lead",
+        "cold_case",
+      ],
       claim_status: ["submitted", "verifying", "approved", "paid", "rejected"],
       cluster_confidence: ["high", "medium"],
       cluster_role: ["primary", "supporting"],

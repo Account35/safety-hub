@@ -20,6 +20,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProfileRewardsRouteImport } from './routes/profile.rewards'
 import { Route as ProfileReportsRouteImport } from './routes/profile.reports'
 import { Route as ProfilePrivacySecurityRouteImport } from './routes/profile.privacy-security'
@@ -88,6 +89,11 @@ const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
   id: '/campaigns/',
   path: '/campaigns/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ProfileRewardsRoute = ProfileRewardsRouteImport.update({
   id: '/rewards',
@@ -165,7 +171,7 @@ const ApiPublicHooksCampaignDispatchRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
   '/profile/rewards': typeof ProfileRewardsRoute
+  '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
@@ -191,7 +198,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
@@ -207,6 +213,7 @@ export interface FileRoutesByTo {
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
   '/profile/rewards': typeof ProfileRewardsRoute
+  '/admin': typeof AdminIndexRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/cases': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
@@ -219,7 +226,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/activity': typeof ActivityRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
@@ -235,6 +242,7 @@ export interface FileRoutesById {
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
   '/profile/rewards': typeof ProfileRewardsRoute
+  '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
@@ -263,6 +271,7 @@ export interface FileRouteTypes {
     | '/profile/privacy-security'
     | '/profile/reports'
     | '/profile/rewards'
+    | '/admin/'
     | '/campaigns/'
     | '/cases/'
     | '/cases/missing/$id'
@@ -273,7 +282,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/activity'
-    | '/admin'
     | '/auth'
     | '/chats'
     | '/profile'
@@ -289,6 +297,7 @@ export interface FileRouteTypes {
     | '/profile/privacy-security'
     | '/profile/reports'
     | '/profile/rewards'
+    | '/admin'
     | '/campaigns'
     | '/cases'
     | '/cases/missing/$id'
@@ -316,6 +325,7 @@ export interface FileRouteTypes {
     | '/profile/privacy-security'
     | '/profile/reports'
     | '/profile/rewards'
+    | '/admin/'
     | '/campaigns/'
     | '/cases/'
     | '/cases/missing/$id'
@@ -328,7 +338,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ActivityRoute: typeof ActivityRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   ChatsRoute: typeof ChatsRouteWithChildren
   ProfileRoute: typeof ProfileRouteWithChildren
@@ -421,6 +431,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/campaigns/'
       preLoaderRoute: typeof CampaignsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/profile/rewards': {
       id: '/profile/rewards'
@@ -534,6 +551,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface ChatsRouteChildren {
   ChatsIdRoute: typeof ChatsIdRoute
 }
@@ -591,7 +618,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ActivityRoute: ActivityRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   ChatsRoute: ChatsRouteWithChildren,
   ProfileRoute: ProfileRouteWithChildren,

@@ -65,7 +65,7 @@ function AdminOverviewPage() {
             <Link to="/admin/reports">Open report queue</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link to="/admin/cases/new">New case</Link>
+            <Link to="/admin/cases">Manage cases</Link>
           </Button>
         </>
       }
@@ -113,7 +113,7 @@ function AdminOverviewPage() {
                 <tr key={r.id} className="border-t border-border">
                   <td className="px-4 py-2 font-medium">
                     <Link
-                      to="/admin/reports/$reportId"
+                      to="/admin/report/$reportId"
                       params={{ reportId: r.id }}
                       className="underline-offset-2 hover:underline"
                     >

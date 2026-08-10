@@ -89,7 +89,7 @@ function AdminReportsPage() {
               <tr key={r.id} className="border-t border-border">
                 <td className="px-4 py-2 font-medium">
                   <Link
-                    to="/admin/reports/$reportId"
+                    to="/admin/report/$reportId"
                     params={{ reportId: r.id }}
                     className="underline-offset-2 hover:underline"
                   >

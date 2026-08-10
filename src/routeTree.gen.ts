@@ -34,6 +34,7 @@ import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as CasesWantedIdRouteImport } from './routes/cases.wanted.$id'
 import { Route as CasesMissingIdRouteImport } from './routes/cases.missing.$id'
+import { Route as AdminReportReportIdRouteImport } from './routes/admin.report.$reportId'
 import { Route as ApiPublicHooksClusterSweepRouteImport } from './routes/api/public/hooks/cluster-sweep'
 import { Route as ApiPublicHooksCampaignDispatchRouteImport } from './routes/api/public/hooks/campaign-dispatch'
 
@@ -161,6 +162,11 @@ const CasesMissingIdRoute = CasesMissingIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => CasesMissingRoute,
 } as any)
+const AdminReportReportIdRoute = AdminReportReportIdRouteImport.update({
+  id: '/report/$reportId',
+  path: '/report/$reportId',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicHooksClusterSweepRoute =
   ApiPublicHooksClusterSweepRouteImport.update({
     id: '/api/public/hooks/cluster-sweep',
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
+  '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
   '/api/public/hooks/campaign-dispatch': typeof ApiPublicHooksCampaignDispatchRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/cases': typeof CasesIndexRoute
+  '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
   '/api/public/hooks/campaign-dispatch': typeof ApiPublicHooksCampaignDispatchRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
+  '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
   '/api/public/hooks/campaign-dispatch': typeof ApiPublicHooksCampaignDispatchRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/campaigns/'
     | '/cases/'
+    | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
     | '/api/public/hooks/campaign-dispatch'
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/campaigns'
     | '/cases'
+    | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
     | '/api/public/hooks/campaign-dispatch'
@@ -340,6 +351,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/campaigns/'
     | '/cases/'
+    | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
     | '/api/public/hooks/campaign-dispatch'
@@ -542,6 +554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesMissingIdRouteImport
       parentRoute: typeof CasesMissingRoute
     }
+    '/admin/report/$reportId': {
+      id: '/admin/report/$reportId'
+      path: '/report/$reportId'
+      fullPath: '/admin/report/$reportId'
+      preLoaderRoute: typeof AdminReportReportIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/hooks/cluster-sweep': {
       id: '/api/public/hooks/cluster-sweep'
       path: '/api/public/hooks/cluster-sweep'
@@ -573,11 +592,13 @@ const AuthenticatedRouteRouteWithChildren =
 interface AdminRouteChildren {
   AdminReportsRoute: typeof AdminReportsRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminReportReportIdRoute: typeof AdminReportReportIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminReportsRoute: AdminReportsRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminReportReportIdRoute: AdminReportReportIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

@@ -56,9 +56,11 @@ export const listAdminRewards = createServerFn({ method: "GET" }).handler(
     if (e2) throw new Error(e2.message);
 
     const eligibility: AdminEligibilityRow[] = (
-      (elig ?? []) as (Record<string, unknown> & { reports?: { report_id: string }[] | null })[]
+      (elig ?? []) as unknown as (Record<string, unknown> & {
+        reports?: { report_id: string } | { report_id: string }[] | null;
+      })[]
     ).map((r) => {
-      const rep = Array.isArray(r.reports) ? r.reports[0] : (r.reports as { report_id: string } | null);
+      const rep = Array.isArray(r.reports) ? r.reports[0] : r.reports;
       return {
         id: r.id as string,
         report_id: r.report_id as string,
@@ -72,7 +74,9 @@ export const listAdminRewards = createServerFn({ method: "GET" }).handler(
       };
     });
 
-    const claimRows: AdminClaimRow[] = ((claims ?? []) as Record<string, unknown>[]).map((c) => {
+    const claimRows: AdminClaimRow[] = (
+      (claims ?? []) as unknown as Record<string, unknown>[]
+    ).map((c) => {
       const ident = (c.identity_confirmation as Record<string, unknown> | null) ?? {};
       const initials = String(ident.full_name ?? "")
         .split(/\s+/)

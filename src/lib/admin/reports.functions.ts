@@ -36,8 +36,8 @@ export interface AdminReportDetail extends AdminQueueRow {
     quality_score: number;
     quality_tier: string;
     quality_factors: string[];
-    key_details_extracted: Record<string, unknown>;
-    suggested_case_matches: unknown;
+    key_details: { label: string; value: string }[];
+    suggested_matches: { label: string; score: number | null }[];
     cluster_id: string | null;
     cluster_confidence: string | null;
     cluster_role: string | null;
@@ -176,6 +176,21 @@ export const getAdminReport = createServerFn({ method: "POST" })
 
     const loc = row.location_approximate as { lat?: number; lng?: number } | null;
 
+    const keyDetails = Object.entries(
+      (analysisRow?.key_details_extracted as Record<string, unknown> | null) ?? {},
+    ).map(([label, value]) => ({
+      label,
+      value: Array.isArray(value) ? value.join(", ") : String(value ?? ""),
+    }));
+
+    const rawMatches = analysisRow?.suggested_case_matches;
+    const suggestedMatches = (Array.isArray(rawMatches) ? rawMatches : []).map((m) => {
+      const o = (m ?? {}) as Record<string, unknown>;
+      const label = String(o.case_name ?? o.name ?? o.case_id ?? "Possible match");
+      const score = typeof o.score === "number" ? o.score : null;
+      return { label, score };
+    });
+
     return {
       id: row.id as string,
       report_id: row.report_id as string,
@@ -209,9 +224,8 @@ export const getAdminReport = createServerFn({ method: "POST" })
             quality_score: analysisRow.quality_score as number,
             quality_tier: analysisRow.quality_tier as string,
             quality_factors: (analysisRow.quality_factors as string[] | null) ?? [],
-            key_details_extracted:
-              (analysisRow.key_details_extracted as Record<string, unknown> | null) ?? {},
-            suggested_case_matches: analysisRow.suggested_case_matches ?? [],
+            key_details: keyDetails,
+            suggested_matches: suggestedMatches,
             cluster_id: (analysisRow.cluster_id as string | null) ?? null,
             cluster_confidence: (analysisRow.cluster_confidence as string | null) ?? null,
             cluster_role: (analysisRow.cluster_role as string | null) ?? null,

@@ -31,6 +31,7 @@ import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as CasesMissingRouteImport } from './routes/cases.missing'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns.$id'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminCasesRouteImport } from './routes/admin.cases'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as CasesWantedIdRouteImport } from './routes/cases.wanted.$id'
 import { Route as CasesMissingIdRouteImport } from './routes/cases.missing.$id'
@@ -147,6 +148,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCasesRoute = AdminCasesRouteImport.update({
+  id: '/cases',
+  path: '/cases',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -190,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/cases': typeof AdminCasesRoute
   '/admin/reports': typeof AdminReportsRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/cases': typeof AdminCasesRoute
   '/admin/reports': typeof AdminReportsRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
@@ -249,6 +257,7 @@ export interface FileRoutesById {
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/cases': typeof AdminCasesRoute
   '/admin/reports': typeof AdminReportsRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/stations'
     | '/dashboard'
+    | '/admin/cases'
     | '/admin/reports'
     | '/campaigns/$id'
     | '/cases/missing'
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/stations'
     | '/dashboard'
+    | '/admin/cases'
     | '/admin/reports'
     | '/campaigns/$id'
     | '/cases/missing'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '/report'
     | '/stations'
     | '/_authenticated/dashboard'
+    | '/admin/cases'
     | '/admin/reports'
     | '/campaigns/$id'
     | '/cases/missing'
@@ -533,6 +545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/cases': {
+      id: '/admin/cases'
+      path: '/cases'
+      fullPath: '/admin/cases'
+      preLoaderRoute: typeof AdminCasesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -590,12 +609,14 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface AdminRouteChildren {
+  AdminCasesRoute: typeof AdminCasesRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminReportReportIdRoute: typeof AdminReportReportIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminCasesRoute: AdminCasesRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminReportReportIdRoute: AdminReportReportIdRoute,

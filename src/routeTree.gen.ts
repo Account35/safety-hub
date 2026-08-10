@@ -30,6 +30,7 @@ import { Route as ChatsIdRouteImport } from './routes/chats.$id'
 import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as CasesMissingRouteImport } from './routes/cases.missing'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns.$id'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminRewardsRouteImport } from './routes/admin.rewards'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminCasesRouteImport } from './routes/admin.cases'
@@ -146,6 +147,11 @@ const CampaignsIdRoute = CampaignsIdRouteImport.update({
   path: '/campaigns/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminRewardsRoute = AdminRewardsRouteImport.update({
   id: '/rewards',
   path: '/rewards',
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/admin/cases': typeof AdminCasesRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/rewards': typeof AdminRewardsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/admin/cases': typeof AdminCasesRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/rewards': typeof AdminRewardsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/admin/cases': typeof AdminCasesRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/rewards': typeof AdminRewardsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/admin/cases'
     | '/admin/reports'
     | '/admin/rewards'
+    | '/admin/settings'
     | '/campaigns/$id'
     | '/cases/missing'
     | '/cases/wanted'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/admin/cases'
     | '/admin/reports'
     | '/admin/rewards'
+    | '/admin/settings'
     | '/campaigns/$id'
     | '/cases/missing'
     | '/cases/wanted'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/admin/cases'
     | '/admin/reports'
     | '/admin/rewards'
+    | '/admin/settings'
     | '/campaigns/$id'
     | '/cases/missing'
     | '/cases/wanted'
@@ -574,6 +586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/rewards': {
       id: '/admin/rewards'
       path: '/rewards'
@@ -671,6 +690,7 @@ interface AdminRouteChildren {
   AdminCasesRoute: typeof AdminCasesRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminRewardsRoute: typeof AdminRewardsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminReportReportIdRoute: typeof AdminReportReportIdRoute
 }
@@ -681,6 +701,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCasesRoute: AdminCasesRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminRewardsRoute: AdminRewardsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminReportReportIdRoute: AdminReportReportIdRoute,
 }

@@ -14,11 +14,13 @@ import { Route as ReportRouteImport } from './routes/report'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ChatsRouteImport } from './routes/chats'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProfileRewardsRouteImport } from './routes/profile.rewards'
 import { Route as ProfileReportsRouteImport } from './routes/profile.reports'
 import { Route as ProfilePrivacySecurityRouteImport } from './routes/profile.privacy-security'
@@ -28,9 +30,16 @@ import { Route as ChatsIdRouteImport } from './routes/chats.$id'
 import { Route as CasesWantedRouteImport } from './routes/cases.wanted'
 import { Route as CasesMissingRouteImport } from './routes/cases.missing'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns.$id'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminRewardsRouteImport } from './routes/admin.rewards'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminCasesRouteImport } from './routes/admin.cases'
+import { Route as AdminCampaignsRouteImport } from './routes/admin.campaigns'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as CasesWantedIdRouteImport } from './routes/cases.wanted.$id'
 import { Route as CasesMissingIdRouteImport } from './routes/cases.missing.$id'
+import { Route as AdminReportReportIdRouteImport } from './routes/admin.report.$reportId'
 import { Route as ApiPublicHooksClusterSweepRouteImport } from './routes/api/public/hooks/cluster-sweep'
 import { Route as ApiPublicHooksCampaignDispatchRouteImport } from './routes/api/public/hooks/campaign-dispatch'
 
@@ -59,6 +68,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ActivityRoute = ActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
@@ -82,6 +96,11 @@ const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
   id: '/campaigns/',
   path: '/campaigns/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ProfileRewardsRoute = ProfileRewardsRouteImport.update({
   id: '/rewards',
@@ -128,6 +147,36 @@ const CampaignsIdRoute = CampaignsIdRouteImport.update({
   path: '/campaigns/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRewardsRoute = AdminRewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCasesRoute = AdminCasesRouteImport.update({
+  id: '/cases',
+  path: '/cases',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCampaignsRoute = AdminCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -142,6 +191,11 @@ const CasesMissingIdRoute = CasesMissingIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => CasesMissingRoute,
+} as any)
+const AdminReportReportIdRoute = AdminReportReportIdRouteImport.update({
+  id: '/report/$reportId',
+  path: '/report/$reportId',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ApiPublicHooksClusterSweepRoute =
   ApiPublicHooksClusterSweepRouteImport.update({
@@ -159,12 +213,19 @@ const ApiPublicHooksCampaignDispatchRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/cases': typeof AdminCasesRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/rewards': typeof AdminRewardsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
@@ -174,8 +235,10 @@ export interface FileRoutesByFullPath {
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
   '/profile/rewards': typeof ProfileRewardsRoute
+  '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
+  '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
   '/api/public/hooks/campaign-dispatch': typeof ApiPublicHooksCampaignDispatchRoute
@@ -190,6 +253,12 @@ export interface FileRoutesByTo {
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/cases': typeof AdminCasesRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/rewards': typeof AdminRewardsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
@@ -199,8 +268,10 @@ export interface FileRoutesByTo {
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
   '/profile/rewards': typeof ProfileRewardsRoute
+  '/admin': typeof AdminIndexRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/cases': typeof CasesIndexRoute
+  '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
   '/api/public/hooks/campaign-dispatch': typeof ApiPublicHooksCampaignDispatchRoute
@@ -211,12 +282,19 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/activity': typeof ActivityRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/chats': typeof ChatsRouteWithChildren
   '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/campaigns': typeof AdminCampaignsRoute
+  '/admin/cases': typeof AdminCasesRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/rewards': typeof AdminRewardsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/cases/missing': typeof CasesMissingRouteWithChildren
   '/cases/wanted': typeof CasesWantedRouteWithChildren
@@ -226,8 +304,10 @@ export interface FileRoutesById {
   '/profile/privacy-security': typeof ProfilePrivacySecurityRoute
   '/profile/reports': typeof ProfileReportsRoute
   '/profile/rewards': typeof ProfileRewardsRoute
+  '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
+  '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
   '/api/public/hooks/campaign-dispatch': typeof ApiPublicHooksCampaignDispatchRoute
@@ -238,12 +318,19 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/activity'
+    | '/admin'
     | '/auth'
     | '/chats'
     | '/profile'
     | '/report'
     | '/stations'
     | '/dashboard'
+    | '/admin/analytics'
+    | '/admin/campaigns'
+    | '/admin/cases'
+    | '/admin/reports'
+    | '/admin/rewards'
+    | '/admin/settings'
     | '/campaigns/$id'
     | '/cases/missing'
     | '/cases/wanted'
@@ -253,8 +340,10 @@ export interface FileRouteTypes {
     | '/profile/privacy-security'
     | '/profile/reports'
     | '/profile/rewards'
+    | '/admin/'
     | '/campaigns/'
     | '/cases/'
+    | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
     | '/api/public/hooks/campaign-dispatch'
@@ -269,6 +358,12 @@ export interface FileRouteTypes {
     | '/report'
     | '/stations'
     | '/dashboard'
+    | '/admin/analytics'
+    | '/admin/campaigns'
+    | '/admin/cases'
+    | '/admin/reports'
+    | '/admin/rewards'
+    | '/admin/settings'
     | '/campaigns/$id'
     | '/cases/missing'
     | '/cases/wanted'
@@ -278,8 +373,10 @@ export interface FileRouteTypes {
     | '/profile/privacy-security'
     | '/profile/reports'
     | '/profile/rewards'
+    | '/admin'
     | '/campaigns'
     | '/cases'
+    | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
     | '/api/public/hooks/campaign-dispatch'
@@ -289,12 +386,19 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/activity'
+    | '/admin'
     | '/auth'
     | '/chats'
     | '/profile'
     | '/report'
     | '/stations'
     | '/_authenticated/dashboard'
+    | '/admin/analytics'
+    | '/admin/campaigns'
+    | '/admin/cases'
+    | '/admin/reports'
+    | '/admin/rewards'
+    | '/admin/settings'
     | '/campaigns/$id'
     | '/cases/missing'
     | '/cases/wanted'
@@ -304,8 +408,10 @@ export interface FileRouteTypes {
     | '/profile/privacy-security'
     | '/profile/reports'
     | '/profile/rewards'
+    | '/admin/'
     | '/campaigns/'
     | '/cases/'
+    | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
     | '/api/public/hooks/campaign-dispatch'
@@ -316,6 +422,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ActivityRoute: typeof ActivityRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   ChatsRoute: typeof ChatsRouteWithChildren
   ProfileRoute: typeof ProfileRouteWithChildren
@@ -367,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/activity': {
       id: '/activity'
       path: '/activity'
@@ -401,6 +515,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/campaigns/'
       preLoaderRoute: typeof CampaignsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/profile/rewards': {
       id: '/profile/rewards'
@@ -465,6 +586,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/rewards': {
+      id: '/admin/rewards'
+      path: '/rewards'
+      fullPath: '/admin/rewards'
+      preLoaderRoute: typeof AdminRewardsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/cases': {
+      id: '/admin/cases'
+      path: '/cases'
+      fullPath: '/admin/cases'
+      preLoaderRoute: typeof AdminCasesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/campaigns': {
+      id: '/admin/campaigns'
+      path: '/campaigns'
+      fullPath: '/admin/campaigns'
+      preLoaderRoute: typeof AdminCampaignsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -485,6 +648,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/cases/missing/$id'
       preLoaderRoute: typeof CasesMissingIdRouteImport
       parentRoute: typeof CasesMissingRoute
+    }
+    '/admin/report/$reportId': {
+      id: '/admin/report/$reportId'
+      path: '/report/$reportId'
+      fullPath: '/admin/report/$reportId'
+      preLoaderRoute: typeof AdminReportReportIdRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/api/public/hooks/cluster-sweep': {
       id: '/api/public/hooks/cluster-sweep'
@@ -513,6 +683,30 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminCampaignsRoute: typeof AdminCampaignsRoute
+  AdminCasesRoute: typeof AdminCasesRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminRewardsRoute: typeof AdminRewardsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminReportReportIdRoute: typeof AdminReportReportIdRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminCampaignsRoute: AdminCampaignsRoute,
+  AdminCasesRoute: AdminCasesRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminRewardsRoute: AdminRewardsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminReportReportIdRoute: AdminReportReportIdRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface ChatsRouteChildren {
   ChatsIdRoute: typeof ChatsIdRoute
@@ -571,6 +765,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ActivityRoute: ActivityRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   ChatsRoute: ChatsRouteWithChildren,
   ProfileRoute: ProfileRouteWithChildren,
@@ -587,13 +782,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

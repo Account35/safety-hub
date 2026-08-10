@@ -138,12 +138,14 @@ export const updateReportStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<{ ok: true }> => {
     const { requireStaff } = await import("@/lib/admin/admin.server");
-    const { supabaseAdmin } = await requireStaff(["detective", "admin", "super_admin"]);
-    const { error } = await supabaseAdmin
+    const { logAdminAction } = await import("@/lib/admin/audit.server");
+    const ctx = await requireStaff(["detective", "admin", "super_admin"]);
+    const { error } = await ctx.supabaseAdmin
       .from("reports")
       .update({ status: data.status })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
+    await logAdminAction(ctx, "report.status", "report", data.id, { status: data.status });
     return { ok: true };
   });
 
@@ -224,7 +226,9 @@ export const upsertCase = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => caseInput.parse(data))
   .handler(async ({ data }): Promise<{ id: string }> => {
     const { requireStaff } = await import("@/lib/admin/admin.server");
-    const { supabaseAdmin } = await requireStaff(["detective", "admin", "super_admin"]);
+    const { logAdminAction } = await import("@/lib/admin/audit.server");
+    const ctx = await requireStaff(["detective", "admin", "super_admin"]);
+    const { supabaseAdmin } = ctx;
     const photos = data.photo_url ? [data.photo_url] : [];
 
     if (data.kind === "wanted") {
@@ -246,6 +250,9 @@ export const upsertCase = createServerFn({ method: "POST" })
           .update(payload)
           .eq("id", data.id);
         if (error) throw new Error(error.message);
+        await logAdminAction(ctx, "case.update", "wanted_person", data.id, {
+          full_name: data.full_name,
+        });
         return { id: data.id };
       }
       const { data: row, error } = await supabaseAdmin
@@ -254,6 +261,9 @@ export const upsertCase = createServerFn({ method: "POST" })
         .select("id")
         .single();
       if (error) throw new Error(error.message);
+      await logAdminAction(ctx, "case.create", "wanted_person", row.id, {
+        full_name: data.full_name,
+      });
       return { id: row.id };
     }
 
@@ -273,6 +283,9 @@ export const upsertCase = createServerFn({ method: "POST" })
         .update(payload)
         .eq("id", data.id);
       if (error) throw new Error(error.message);
+      await logAdminAction(ctx, "case.update", "missing_person", data.id, {
+        full_name: data.full_name,
+      });
       return { id: data.id };
     }
     const { data: row, error } = await supabaseAdmin
@@ -281,6 +294,9 @@ export const upsertCase = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+    await logAdminAction(ctx, "case.create", "missing_person", row.id, {
+      full_name: data.full_name,
+    });
     return { id: row.id };
   });
 
@@ -296,7 +312,9 @@ export const setCaseStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<{ ok: true }> => {
     const { requireStaff } = await import("@/lib/admin/admin.server");
-    const { supabaseAdmin } = await requireStaff(["detective", "admin", "super_admin"]);
+    const { logAdminAction } = await import("@/lib/admin/audit.server");
+    const ctx = await requireStaff(["detective", "admin", "super_admin"]);
+    const { supabaseAdmin } = ctx;
 
     if (data.kind === "wanted") {
       const { error } = await supabaseAdmin
@@ -304,6 +322,7 @@ export const setCaseStatus = createServerFn({ method: "POST" })
         .update({ is_active: data.status === "active" })
         .eq("id", data.id);
       if (error) throw new Error(error.message);
+      await logAdminAction(ctx, "case.status", "wanted_person", data.id, { status: data.status });
       return { ok: true };
     }
     const next = data.status === "inactive" ? "closed" : data.status;
@@ -312,6 +331,7 @@ export const setCaseStatus = createServerFn({ method: "POST" })
       .update({ case_status: next as "active" | "found" | "closed" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
+    await logAdminAction(ctx, "case.status", "missing_person", data.id, { status: data.status });
     return { ok: true };
   });
 
@@ -326,7 +346,9 @@ export const bulkUploadCases = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<{ inserted: number }> => {
     const { requireStaff } = await import("@/lib/admin/admin.server");
-    const { supabaseAdmin } = await requireStaff(["admin", "super_admin"]);
+    const { logAdminAction } = await import("@/lib/admin/audit.server");
+    const ctx = await requireStaff(["admin", "super_admin"]);
+    const { supabaseAdmin } = ctx;
 
     if (data.kind === "wanted") {
       const payload = data.rows.map((r) => ({
@@ -345,6 +367,9 @@ export const bulkUploadCases = createServerFn({ method: "POST" })
         .from("wanted_persons")
         .insert(payload, { count: "exact" });
       if (error) throw new Error(error.message);
+      await logAdminAction(ctx, "case.bulk_upload", "wanted_person", null, {
+        rows: payload.length,
+      });
       return { inserted: count ?? payload.length };
     }
 
@@ -362,5 +387,6 @@ export const bulkUploadCases = createServerFn({ method: "POST" })
       .from("missing_persons")
       .insert(payload, { count: "exact" });
     if (error) throw new Error(error.message);
+    await logAdminAction(ctx, "case.bulk_upload", "missing_person", null, { rows: payload.length });
     return { inserted: count ?? payload.length };
   });

@@ -13,7 +13,14 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-export const ADMIN_NAV = [
+interface AdminNavItem {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+}
+
+export const ADMIN_NAV: AdminNavItem[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/admin/reports", label: "Report queue", icon: FileSearch },
   { to: "/admin/cases", label: "Cases", icon: FolderOpen },
@@ -21,7 +28,7 @@ export const ADMIN_NAV = [
   { to: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/settings", label: "Settings", icon: Settings },
-] as const;
+];
 
 export function AdminShell({
   title,
@@ -51,7 +58,7 @@ export function AdminShell({
             return (
               <Link
                 key={item.to}
-                to={item.to}
+                to={item.to as "/admin"}
                 aria-current={active ? "page" : undefined}
                 className={`flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
                   active

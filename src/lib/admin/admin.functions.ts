@@ -30,6 +30,8 @@ export interface AdminOverview {
 export interface AdminStaffCheck {
   isStaff: boolean;
   roles: string[];
+  isTestSeedAccount?: boolean;
+  mustChangePassword?: boolean;
 }
 
 export interface AdminCaseRow {
@@ -46,8 +48,18 @@ export const checkStaffAccess = createServerFn({ method: "GET" }).handler(
   async (): Promise<AdminStaffCheck> => {
     const { requireStaff } = await import("@/lib/admin/admin.server");
     try {
-      const { roles } = await requireStaff();
-      return { isStaff: true, roles };
+      const { roles, supabaseAdmin, userId } = await requireStaff();
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("is_test_seed_account, must_change_password")
+        .eq("id", userId)
+        .maybeSingle();
+      return {
+        isStaff: true,
+        roles,
+        isTestSeedAccount: profile?.is_test_seed_account ?? false,
+        mustChangePassword: profile?.must_change_password ?? false,
+      };
     } catch {
       return { isStaff: false, roles: [] };
     }

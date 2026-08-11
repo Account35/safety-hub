@@ -254,12 +254,19 @@ export const listStaff = createServerFn({ method: "GET" }).handler(
 
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, is_test_seed_account")
       .in("id", ids);
     const names = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
+    const testSeeds = new Set(
+      (profiles ?? []).filter((p) => p.is_test_seed_account).map((p) => p.id),
+    );
 
     return ids
-      .map((id) => ({ id, name: names.get(id) || "Unnamed staff", roles: byUser.get(id) ?? [] }))
+      .map((id) => ({
+        id,
+        name: `${names.get(id) || "Unnamed staff"}${testSeeds.has(id) ? " (test account)" : ""}`,
+        roles: byUser.get(id) ?? [],
+      }))
       .sort((a, b) => a.name.localeCompare(b.name));
   },
 );

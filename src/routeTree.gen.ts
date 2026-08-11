@@ -103,34 +103,34 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const ProfileRewardsRoute = ProfileRewardsRouteImport.update({
-  id: '/rewards',
-  path: '/rewards',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/rewards',
+  path: '/profile/rewards',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileReportsRoute = ProfileReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/reports',
+  path: '/profile/reports',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfilePrivacySecurityRoute = ProfilePrivacySecurityRouteImport.update({
-  id: '/privacy-security',
-  path: '/privacy-security',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/privacy-security',
+  path: '/profile/privacy-security',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileNotificationsRoute = ProfileNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/notifications',
+  path: '/profile/notifications',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileLanguageRoute = ProfileLanguageRouteImport.update({
-  id: '/language',
-  path: '/language',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/language',
+  path: '/profile/language',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ChatsIdRoute = ChatsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ChatsRoute,
+  id: '/chats/$id',
+  path: '/chats/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CasesWantedRoute = CasesWantedRouteImport.update({
   id: '/cases/wanted',
@@ -429,6 +429,12 @@ export interface RootRouteChildren {
   CampaignsIdRoute: typeof CampaignsIdRoute
   CasesMissingRoute: typeof CasesMissingRouteWithChildren
   CasesWantedRoute: typeof CasesWantedRouteWithChildren
+  ChatsIdRoute: typeof ChatsIdRoute
+  ProfileLanguageRoute: typeof ProfileLanguageRoute
+  ProfileNotificationsRoute: typeof ProfileNotificationsRoute
+  ProfilePrivacySecurityRoute: typeof ProfilePrivacySecurityRoute
+  ProfileReportsRoute: typeof ProfileReportsRoute
+  ProfileRewardsRoute: typeof ProfileRewardsRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
   CasesIndexRoute: typeof CasesIndexRoute
   ChatsIndexRoute: typeof ChatsIndexRoute
@@ -525,45 +531,45 @@ declare module '@tanstack/react-router' {
     }
     '/profile/rewards': {
       id: '/profile/rewards'
-      path: '/rewards'
+      path: '/profile/rewards'
       fullPath: '/profile/rewards'
       preLoaderRoute: typeof ProfileRewardsRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/profile/reports': {
       id: '/profile/reports'
-      path: '/reports'
+      path: '/profile/reports'
       fullPath: '/profile/reports'
       preLoaderRoute: typeof ProfileReportsRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/profile/privacy-security': {
       id: '/profile/privacy-security'
-      path: '/privacy-security'
+      path: '/profile/privacy-security'
       fullPath: '/profile/privacy-security'
       preLoaderRoute: typeof ProfilePrivacySecurityRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/profile/notifications': {
       id: '/profile/notifications'
-      path: '/notifications'
+      path: '/profile/notifications'
       fullPath: '/profile/notifications'
       preLoaderRoute: typeof ProfileNotificationsRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/profile/language': {
       id: '/profile/language'
-      path: '/language'
+      path: '/profile/language'
       fullPath: '/profile/language'
       preLoaderRoute: typeof ProfileLanguageRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/chats/$id': {
       id: '/chats/$id'
-      path: '/$id'
+      path: '/chats/$id'
       fullPath: '/chats/$id'
       preLoaderRoute: typeof ChatsIdRouteImport
-      parentRoute: typeof ChatsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/cases/wanted': {
       id: '/cases/wanted'
@@ -743,6 +749,12 @@ const rootRouteChildren: RootRouteChildren = {
   CampaignsIdRoute: CampaignsIdRoute,
   CasesMissingRoute: CasesMissingRouteWithChildren,
   CasesWantedRoute: CasesWantedRouteWithChildren,
+  ChatsIdRoute: ChatsIdRoute,
+  ProfileLanguageRoute: ProfileLanguageRoute,
+  ProfileNotificationsRoute: ProfileNotificationsRoute,
+  ProfilePrivacySecurityRoute: ProfilePrivacySecurityRoute,
+  ProfileReportsRoute: ProfileReportsRoute,
+  ProfileRewardsRoute: ProfileRewardsRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
   CasesIndexRoute: CasesIndexRoute,
   ChatsIndexRoute: ChatsIndexRoute,
@@ -753,13 +765,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

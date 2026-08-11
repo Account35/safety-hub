@@ -534,8 +534,10 @@ export type Database = {
           created_at: string
           full_name: string
           id: string
+          is_test_seed_account: boolean
           language_preference: string
           last_login_at: string | null
+          must_change_password: boolean
           phone_number: string | null
           phone_verified: boolean
           primary_township: string | null
@@ -547,8 +549,10 @@ export type Database = {
           created_at?: string
           full_name?: string
           id: string
+          is_test_seed_account?: boolean
           language_preference?: string
           last_login_at?: string | null
+          must_change_password?: boolean
           phone_number?: string | null
           phone_verified?: boolean
           primary_township?: string | null
@@ -560,8 +564,10 @@ export type Database = {
           created_at?: string
           full_name?: string
           id?: string
+          is_test_seed_account?: boolean
           language_preference?: string
           last_login_at?: string | null
+          must_change_password?: boolean
           phone_number?: string | null
           phone_verified?: boolean
           primary_township?: string | null

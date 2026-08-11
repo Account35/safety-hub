@@ -11,13 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StationsRouteImport } from './routes/stations'
 import { Route as ReportRouteImport } from './routes/report'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as ChatsRouteImport } from './routes/chats'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileIndexRouteImport } from './routes/profile.index'
+import { Route as ChatsIndexRouteImport } from './routes/chats.index'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -53,16 +53,6 @@ const ReportRoute = ReportRouteImport.update({
   path: '/report',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatsRoute = ChatsRouteImport.update({
-  id: '/chats',
-  path: '/chats',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -85,6 +75,16 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatsIndexRoute = ChatsIndexRouteImport.update({
+  id: '/chats/',
+  path: '/chats/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CasesIndexRoute = CasesIndexRouteImport.update({
@@ -215,8 +215,6 @@ export interface FileRoutesByFullPath {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
-  '/chats': typeof ChatsRouteWithChildren
-  '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -238,6 +236,8 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
+  '/chats/': typeof ChatsIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -248,8 +248,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/auth': typeof AuthRoute
-  '/chats': typeof ChatsRouteWithChildren
-  '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -271,6 +269,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/cases': typeof CasesIndexRoute
+  '/chats': typeof ChatsIndexRoute
+  '/profile': typeof ProfileIndexRoute
   '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -284,8 +284,6 @@ export interface FileRoutesById {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
-  '/chats': typeof ChatsRouteWithChildren
-  '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -307,6 +305,8 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
+  '/chats/': typeof ChatsIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -320,8 +320,6 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/auth'
-    | '/chats'
-    | '/profile'
     | '/report'
     | '/stations'
     | '/dashboard'
@@ -343,6 +341,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/campaigns/'
     | '/cases/'
+    | '/chats/'
+    | '/profile/'
     | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -353,8 +353,6 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/auth'
-    | '/chats'
-    | '/profile'
     | '/report'
     | '/stations'
     | '/dashboard'
@@ -376,6 +374,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/campaigns'
     | '/cases'
+    | '/chats'
+    | '/profile'
     | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -388,8 +388,6 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/auth'
-    | '/chats'
-    | '/profile'
     | '/report'
     | '/stations'
     | '/_authenticated/dashboard'
@@ -411,6 +409,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/campaigns/'
     | '/cases/'
+    | '/chats/'
+    | '/profile/'
     | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -424,8 +424,6 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ChatsRoute: typeof ChatsRouteWithChildren
-  ProfileRoute: typeof ProfileRouteWithChildren
   ReportRoute: typeof ReportRoute
   StationsRoute: typeof StationsRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
@@ -433,6 +431,8 @@ export interface RootRouteChildren {
   CasesWantedRoute: typeof CasesWantedRouteWithChildren
   CampaignsIndexRoute: typeof CampaignsIndexRoute
   CasesIndexRoute: typeof CasesIndexRoute
+  ChatsIndexRoute: typeof ChatsIndexRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
   ApiPublicHooksCampaignDispatchRoute: typeof ApiPublicHooksCampaignDispatchRoute
   ApiPublicHooksClusterSweepRoute: typeof ApiPublicHooksClusterSweepRoute
 }
@@ -451,20 +451,6 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chats': {
-      id: '/chats'
-      path: '/chats'
-      fullPath: '/chats'
-      preLoaderRoute: typeof ChatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -500,6 +486,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chats/': {
+      id: '/chats/'
+      path: '/chats'
+      fullPath: '/chats/'
+      preLoaderRoute: typeof ChatsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cases/': {
@@ -708,35 +708,6 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface ChatsRouteChildren {
-  ChatsIdRoute: typeof ChatsIdRoute
-}
-
-const ChatsRouteChildren: ChatsRouteChildren = {
-  ChatsIdRoute: ChatsIdRoute,
-}
-
-const ChatsRouteWithChildren = ChatsRoute._addFileChildren(ChatsRouteChildren)
-
-interface ProfileRouteChildren {
-  ProfileLanguageRoute: typeof ProfileLanguageRoute
-  ProfileNotificationsRoute: typeof ProfileNotificationsRoute
-  ProfilePrivacySecurityRoute: typeof ProfilePrivacySecurityRoute
-  ProfileReportsRoute: typeof ProfileReportsRoute
-  ProfileRewardsRoute: typeof ProfileRewardsRoute
-}
-
-const ProfileRouteChildren: ProfileRouteChildren = {
-  ProfileLanguageRoute: ProfileLanguageRoute,
-  ProfileNotificationsRoute: ProfileNotificationsRoute,
-  ProfilePrivacySecurityRoute: ProfilePrivacySecurityRoute,
-  ProfileReportsRoute: ProfileReportsRoute,
-  ProfileRewardsRoute: ProfileRewardsRoute,
-}
-
-const ProfileRouteWithChildren =
-  ProfileRoute._addFileChildren(ProfileRouteChildren)
-
 interface CasesMissingRouteChildren {
   CasesMissingIdRoute: typeof CasesMissingIdRoute
 }
@@ -767,8 +738,6 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
-  ChatsRoute: ChatsRouteWithChildren,
-  ProfileRoute: ProfileRouteWithChildren,
   ReportRoute: ReportRoute,
   StationsRoute: StationsRoute,
   CampaignsIdRoute: CampaignsIdRoute,
@@ -776,6 +745,8 @@ const rootRouteChildren: RootRouteChildren = {
   CasesWantedRoute: CasesWantedRouteWithChildren,
   CampaignsIndexRoute: CampaignsIndexRoute,
   CasesIndexRoute: CasesIndexRoute,
+  ChatsIndexRoute: ChatsIndexRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
   ApiPublicHooksCampaignDispatchRoute: ApiPublicHooksCampaignDispatchRoute,
   ApiPublicHooksClusterSweepRoute: ApiPublicHooksClusterSweepRoute,
 }

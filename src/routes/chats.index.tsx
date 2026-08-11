@@ -13,7 +13,7 @@ import { getMyCampaigns, markCampaignOpened, type CampaignInboxItem } from "@/li
 import { setCampaignUnreadCount } from "@/lib/campaigns/campaign-unread";
 import { formatRelativeTime } from "@/lib/chat-utils";
 
-export const Route = createFileRoute("/chats")({
+export const Route = createFileRoute("/chats/")({
   head: () => ({
     meta: [{ title: "My SAPS Conversations · Community Safety Tracker" }],
   }),

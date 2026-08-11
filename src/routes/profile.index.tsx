@@ -19,7 +19,7 @@ import { useTranslation } from "@/lib/i18n/i18n-context";
 import { getLanguage } from "@/lib/i18n/registry";
 import { useAccessibility } from "@/lib/accessibility/accessibility-context";
 
-export const Route = createFileRoute("/profile")({
+export const Route = createFileRoute("/profile/")({
   head: () => ({ meta: [{ title: "My Profile · Community Safety Tracker" }] }),
   component: ProfilePage,
 });

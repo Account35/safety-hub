@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { passwordRule } from "@/lib/password.rules";
 import { getAuthenticatedUser } from "@/lib/supabase-auth";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -265,9 +266,11 @@ export const updatePrivacySettings = createServerFn({ method: "POST" })
 
 // ── Password change ────────────────────────────────────────────────────────
 
+import { passwordRule } from "@/lib/password.rules";
+
 export const changePassword = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
-    z.object({ currentPassword: z.string().min(1), newPassword: z.string().min(8) }).parse(d)
+    z.object({ currentPassword: z.string().min(1), newPassword: passwordRule }).parse(d)
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin, user } = await getAdminAndUser();

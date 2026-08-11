@@ -1,23 +1,12 @@
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-
-const passwordRule = z
-  .string()
-  .min(8, "At least 8 characters")
-  .regex(/[A-Z]/, "Needs an uppercase letter")
-  .regex(/[0-9]/, "Needs a number")
-  .regex(/[^A-Za-z0-9]/, "Needs a special character");
+import { passwordRule, passwordStrength, passwordRequirementHint } from "@/lib/password.rules";
 
 function strength(pw: string): { score: 0 | 1 | 2 | 3; label: string } {
-  let s = 0;
-  if (pw.length >= 8) s++;
-  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
-  if (/[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw)) s++;
-  return { score: s as 0 | 1 | 2 | 3, label: ["Too short", "Weak", "Medium", "Strong"][s] };
+  return passwordStrength(pw);
 }
 
 interface Props {
@@ -36,6 +25,8 @@ export function PasswordChangeForm({ onSubmit, onCancel }: Props) {
 
   const str = strength(next);
   const strengthColors = ["bg-muted", "bg-destructive", "bg-amber-500", "bg-accent"];
+  const isNewPasswordValid = passwordRule.safeParse(next).success;
+  const canSubmit = !loading && current.length > 0 && next.length > 0 && confirm.length > 0 && next === confirm && isNewPasswordValid;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -94,7 +85,7 @@ export function PasswordChangeForm({ onSubmit, onCancel }: Props) {
               ))}
             </div>
             <p id="cp-next-hint" className="text-xs text-muted-foreground">
-              Strength: <span className="font-medium">{str.label}</span> · 8+ chars, uppercase, number, symbol
+              Strength: <span className="font-medium">{str.label}</span> · {passwordRequirementHint}
             </p>
           </div>
         )}
@@ -111,7 +102,7 @@ export function PasswordChangeForm({ onSubmit, onCancel }: Props) {
       </div>
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={loading} className="h-9">
+        <Button type="submit" disabled={!canSubmit} className="h-9">
           {loading ? <Loader2 className="size-4 animate-spin" /> : "Change Password"}
         </Button>
         <Button type="button" variant="ghost" onClick={onCancel} className="h-9">Cancel</Button>

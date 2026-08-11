@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
+import { passwordRule, passwordStrength, passwordRequirementHint } from "@/lib/password.rules";
 import { toast } from "sonner";
 import { t } from "@/lib/i18n/en";
 
@@ -25,13 +26,6 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const passwordRule = z
-  .string()
-  .min(8, "At least 8 characters")
-  .regex(/[A-Z]/, "Needs an uppercase letter")
-  .regex(/[0-9]/, "Needs a number")
-  .regex(/[^A-Za-z0-9]/, "Needs a special character");
-
 const signInSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(1, "Required"),
@@ -42,15 +36,6 @@ const signUpSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: passwordRule,
 });
-
-function passwordStrength(pw: string): { score: 0 | 1 | 2 | 3; label: string } {
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
-  if (/[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++;
-  const labels = ["Too short", "Weak", "Medium", "Strong"] as const;
-  return { score: score as 0 | 1 | 2 | 3, label: labels[score] };
-}
 
 function AuthPage() {
   const router = useRouter();
@@ -285,7 +270,7 @@ function SignUpForm() {
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              Strength: <span className="font-medium">{strength.label}</span> · 8+ chars, uppercase, number, symbol
+              Strength: <span className="font-medium">{strength.label}</span> · {passwordRequirementHint}
             </p>
           </div>
         )}

@@ -94,7 +94,10 @@ export function AdminShell({
               <div className="mt-2 flex flex-wrap gap-1">
                 {roles.map((r) => (
                   <Badge key={r} variant="outline" className="text-xs">
-                    {r.replace("_", " ")}
+                    {r
+                      .split("_")
+                      .map((word) => word[0]?.toUpperCase() + word.slice(1))
+                      .join(" ")}
                   </Badge>
                 ))}
               </div>

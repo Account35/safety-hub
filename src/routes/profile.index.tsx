@@ -25,11 +25,11 @@ export const Route = createFileRoute("/profile/")({
 });
 
 function ProfilePage() {
-  const { user, status } = useAuth();
+  const { user, status, roles } = useAuth();
 
   if (status === "loading") return <PageShell><Skeleton className="h-40 w-full rounded-xl" /></PageShell>;
   if (!user) return <GuestPrompt />;
-  return <AuthenticatedProfile />;
+  return <AuthenticatedProfile roles={roles} />;
 }
 
 // ── Guest prompt ───────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ function GuestPrompt() {
 
 // ── Authenticated profile ──────────────────────────────────────────────────
 
-function AuthenticatedProfile() {
+function AuthenticatedProfile({ roles }: { roles: string[] }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { language, t } = useTranslation();
@@ -135,6 +135,20 @@ function AuthenticatedProfile() {
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
+
+  const accountTypeLabel = roles.includes("super_admin")
+    ? "Super Admin"
+    : roles.includes("admin")
+    ? "Admin"
+    : roles.includes("moderator")
+    ? "Moderator"
+    : roles.includes("analyst")
+    ? "Analyst"
+    : roles.includes("detective")
+    ? "Detective"
+    : roles.includes("user")
+    ? "Registered User"
+    : "Unknown Role";
 
   const memberSince = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString("en-ZA", { month: "long", year: "numeric" })
@@ -213,7 +227,7 @@ function AuthenticatedProfile() {
       <Card className="mb-4">
         <CardContent className="p-4">
           <h3 className="text-sm font-semibold mb-1">Account Type</h3>
-          <p className="text-sm font-medium">Registered User</p>
+          <p className="text-sm font-medium">{accountTypeLabel}</p>
           <p className="text-xs text-muted-foreground mt-1">
             Your reports and conversations are linked to your account while keeping your identity hidden from SAPS officers, as explained in your privacy settings below.
           </p>

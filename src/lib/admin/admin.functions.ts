@@ -67,6 +67,19 @@ export const checkStaffAccess = createServerFn({ method: "GET" }).handler(
 );
 
 // ── Overview + realtime-backed report feed ────────────────────────────────
+export const clearPasswordChangeRequirement = createServerFn({ method: "POST" }).handler(
+  async (): Promise<{ ok: true }> => {
+    const { requireStaff } = await import("@/lib/admin/admin.server");
+    const { supabaseAdmin, userId } = await requireStaff();
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ must_change_password: false })
+      .eq("id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  },
+);
+
 export const getAdminOverview = createServerFn({ method: "GET" }).handler(
   async (): Promise<AdminOverview> => {
     const { requireStaff } = await import("@/lib/admin/admin.server");

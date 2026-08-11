@@ -11,13 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StationsRouteImport } from './routes/stations'
 import { Route as ReportRouteImport } from './routes/report'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as ChatsRouteImport } from './routes/chats'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileIndexRouteImport } from './routes/profile.index'
+import { Route as ChatsIndexRouteImport } from './routes/chats.index'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -53,16 +53,6 @@ const ReportRoute = ReportRouteImport.update({
   path: '/report',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatsRoute = ChatsRouteImport.update({
-  id: '/chats',
-  path: '/chats',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -87,6 +77,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatsIndexRoute = ChatsIndexRouteImport.update({
+  id: '/chats/',
+  path: '/chats/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CasesIndexRoute = CasesIndexRouteImport.update({
   id: '/cases/',
   path: '/cases/',
@@ -103,34 +103,34 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const ProfileRewardsRoute = ProfileRewardsRouteImport.update({
-  id: '/rewards',
-  path: '/rewards',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/rewards',
+  path: '/profile/rewards',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileReportsRoute = ProfileReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/reports',
+  path: '/profile/reports',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfilePrivacySecurityRoute = ProfilePrivacySecurityRouteImport.update({
-  id: '/privacy-security',
-  path: '/privacy-security',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/privacy-security',
+  path: '/profile/privacy-security',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileNotificationsRoute = ProfileNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/notifications',
+  path: '/profile/notifications',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileLanguageRoute = ProfileLanguageRouteImport.update({
-  id: '/language',
-  path: '/language',
-  getParentRoute: () => ProfileRoute,
+  id: '/profile/language',
+  path: '/profile/language',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ChatsIdRoute = ChatsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ChatsRoute,
+  id: '/chats/$id',
+  path: '/chats/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CasesWantedRoute = CasesWantedRouteImport.update({
   id: '/cases/wanted',
@@ -215,8 +215,6 @@ export interface FileRoutesByFullPath {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
-  '/chats': typeof ChatsRouteWithChildren
-  '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -238,6 +236,8 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
+  '/chats/': typeof ChatsIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -248,8 +248,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/auth': typeof AuthRoute
-  '/chats': typeof ChatsRouteWithChildren
-  '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -271,6 +269,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/cases': typeof CasesIndexRoute
+  '/chats': typeof ChatsIndexRoute
+  '/profile': typeof ProfileIndexRoute
   '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -284,8 +284,6 @@ export interface FileRoutesById {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
-  '/chats': typeof ChatsRouteWithChildren
-  '/profile': typeof ProfileRouteWithChildren
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -307,6 +305,8 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/cases/': typeof CasesIndexRoute
+  '/chats/': typeof ChatsIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/admin/report/$reportId': typeof AdminReportReportIdRoute
   '/cases/missing/$id': typeof CasesMissingIdRoute
   '/cases/wanted/$id': typeof CasesWantedIdRoute
@@ -320,8 +320,6 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/auth'
-    | '/chats'
-    | '/profile'
     | '/report'
     | '/stations'
     | '/dashboard'
@@ -343,6 +341,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/campaigns/'
     | '/cases/'
+    | '/chats/'
+    | '/profile/'
     | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -353,8 +353,6 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/auth'
-    | '/chats'
-    | '/profile'
     | '/report'
     | '/stations'
     | '/dashboard'
@@ -376,6 +374,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/campaigns'
     | '/cases'
+    | '/chats'
+    | '/profile'
     | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -388,8 +388,6 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/auth'
-    | '/chats'
-    | '/profile'
     | '/report'
     | '/stations'
     | '/_authenticated/dashboard'
@@ -411,6 +409,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/campaigns/'
     | '/cases/'
+    | '/chats/'
+    | '/profile/'
     | '/admin/report/$reportId'
     | '/cases/missing/$id'
     | '/cases/wanted/$id'
@@ -424,15 +424,21 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ChatsRoute: typeof ChatsRouteWithChildren
-  ProfileRoute: typeof ProfileRouteWithChildren
   ReportRoute: typeof ReportRoute
   StationsRoute: typeof StationsRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
   CasesMissingRoute: typeof CasesMissingRouteWithChildren
   CasesWantedRoute: typeof CasesWantedRouteWithChildren
+  ChatsIdRoute: typeof ChatsIdRoute
+  ProfileLanguageRoute: typeof ProfileLanguageRoute
+  ProfileNotificationsRoute: typeof ProfileNotificationsRoute
+  ProfilePrivacySecurityRoute: typeof ProfilePrivacySecurityRoute
+  ProfileReportsRoute: typeof ProfileReportsRoute
+  ProfileRewardsRoute: typeof ProfileRewardsRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
   CasesIndexRoute: typeof CasesIndexRoute
+  ChatsIndexRoute: typeof ChatsIndexRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
   ApiPublicHooksCampaignDispatchRoute: typeof ApiPublicHooksCampaignDispatchRoute
   ApiPublicHooksClusterSweepRoute: typeof ApiPublicHooksClusterSweepRoute
 }
@@ -451,20 +457,6 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chats': {
-      id: '/chats'
-      path: '/chats'
-      fullPath: '/chats'
-      preLoaderRoute: typeof ChatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -502,6 +494,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chats/': {
+      id: '/chats/'
+      path: '/chats'
+      fullPath: '/chats/'
+      preLoaderRoute: typeof ChatsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cases/': {
       id: '/cases/'
       path: '/cases'
@@ -525,45 +531,45 @@ declare module '@tanstack/react-router' {
     }
     '/profile/rewards': {
       id: '/profile/rewards'
-      path: '/rewards'
+      path: '/profile/rewards'
       fullPath: '/profile/rewards'
       preLoaderRoute: typeof ProfileRewardsRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/profile/reports': {
       id: '/profile/reports'
-      path: '/reports'
+      path: '/profile/reports'
       fullPath: '/profile/reports'
       preLoaderRoute: typeof ProfileReportsRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/profile/privacy-security': {
       id: '/profile/privacy-security'
-      path: '/privacy-security'
+      path: '/profile/privacy-security'
       fullPath: '/profile/privacy-security'
       preLoaderRoute: typeof ProfilePrivacySecurityRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/profile/notifications': {
       id: '/profile/notifications'
-      path: '/notifications'
+      path: '/profile/notifications'
       fullPath: '/profile/notifications'
       preLoaderRoute: typeof ProfileNotificationsRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/profile/language': {
       id: '/profile/language'
-      path: '/language'
+      path: '/profile/language'
       fullPath: '/profile/language'
       preLoaderRoute: typeof ProfileLanguageRouteImport
-      parentRoute: typeof ProfileRoute
+      parentRoute: typeof rootRouteImport
     }
     '/chats/$id': {
       id: '/chats/$id'
-      path: '/$id'
+      path: '/chats/$id'
       fullPath: '/chats/$id'
       preLoaderRoute: typeof ChatsIdRouteImport
-      parentRoute: typeof ChatsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/cases/wanted': {
       id: '/cases/wanted'
@@ -708,35 +714,6 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface ChatsRouteChildren {
-  ChatsIdRoute: typeof ChatsIdRoute
-}
-
-const ChatsRouteChildren: ChatsRouteChildren = {
-  ChatsIdRoute: ChatsIdRoute,
-}
-
-const ChatsRouteWithChildren = ChatsRoute._addFileChildren(ChatsRouteChildren)
-
-interface ProfileRouteChildren {
-  ProfileLanguageRoute: typeof ProfileLanguageRoute
-  ProfileNotificationsRoute: typeof ProfileNotificationsRoute
-  ProfilePrivacySecurityRoute: typeof ProfilePrivacySecurityRoute
-  ProfileReportsRoute: typeof ProfileReportsRoute
-  ProfileRewardsRoute: typeof ProfileRewardsRoute
-}
-
-const ProfileRouteChildren: ProfileRouteChildren = {
-  ProfileLanguageRoute: ProfileLanguageRoute,
-  ProfileNotificationsRoute: ProfileNotificationsRoute,
-  ProfilePrivacySecurityRoute: ProfilePrivacySecurityRoute,
-  ProfileReportsRoute: ProfileReportsRoute,
-  ProfileRewardsRoute: ProfileRewardsRoute,
-}
-
-const ProfileRouteWithChildren =
-  ProfileRoute._addFileChildren(ProfileRouteChildren)
-
 interface CasesMissingRouteChildren {
   CasesMissingIdRoute: typeof CasesMissingIdRoute
 }
@@ -767,28 +744,24 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
-  ChatsRoute: ChatsRouteWithChildren,
-  ProfileRoute: ProfileRouteWithChildren,
   ReportRoute: ReportRoute,
   StationsRoute: StationsRoute,
   CampaignsIdRoute: CampaignsIdRoute,
   CasesMissingRoute: CasesMissingRouteWithChildren,
   CasesWantedRoute: CasesWantedRouteWithChildren,
+  ChatsIdRoute: ChatsIdRoute,
+  ProfileLanguageRoute: ProfileLanguageRoute,
+  ProfileNotificationsRoute: ProfileNotificationsRoute,
+  ProfilePrivacySecurityRoute: ProfilePrivacySecurityRoute,
+  ProfileReportsRoute: ProfileReportsRoute,
+  ProfileRewardsRoute: ProfileRewardsRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
   CasesIndexRoute: CasesIndexRoute,
+  ChatsIndexRoute: ChatsIndexRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
   ApiPublicHooksCampaignDispatchRoute: ApiPublicHooksCampaignDispatchRoute,
   ApiPublicHooksClusterSweepRoute: ApiPublicHooksClusterSweepRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

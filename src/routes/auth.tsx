@@ -13,6 +13,12 @@ import { passwordRule, passwordStrength, passwordRequirementHint } from "@/lib/p
 import { toast } from "sonner";
 import { t } from "@/lib/i18n/en";
 
+const STAFF_ROLES = ["detective", "analyst", "moderator", "admin", "super_admin"] as const;
+
+function getHomePath(roles: string[]) {
+  return roles.some((role) => STAFF_ROLES.includes(role as typeof STAFF_ROLES[number])) ? "/admin" : "/dashboard";
+}
+
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
@@ -39,13 +45,14 @@ const signUpSchema = z.object({
 
 function AuthPage() {
   const router = useRouter();
-  const { user, status } = useAuth();
+  const { user, status, roles } = useAuth();
+  const homePath = getHomePath(roles);
 
   useEffect(() => {
     if (status === "ready" && user) {
-      router.navigate({ to: "/dashboard", replace: true });
+      router.navigate({ to: homePath, replace: true });
     }
-  }, [user, status, router]);
+  }, [user, status, homePath, router]);
 
   return (
     <div className="grid min-h-dvh place-items-center bg-primary px-4 py-8 text-primary-foreground">
@@ -96,7 +103,7 @@ function GoogleButton() {
   const onClick = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/dashboard",
+      redirect_uri: window.location.origin + "/auth",
     });
     if (result.error) {
       toast.error(result.error.message ?? "Google sign-in failed");
@@ -155,7 +162,6 @@ function SignInForm() {
       return;
     }
     toast.success(t.auth.signedIn);
-    router.navigate({ to: "/dashboard", replace: true });
   };
 
   return (
@@ -214,7 +220,7 @@ function SignUpForm() {
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: window.location.origin + "/dashboard",
+        emailRedirectTo: window.location.origin + "/auth",
         data: { full_name: parsed.data.fullName },
       },
     });
@@ -224,7 +230,6 @@ function SignUpForm() {
       return;
     }
     toast.success(t.auth.accountCreated);
-    router.navigate({ to: "/dashboard", replace: true });
   };
 
   const strengthColors = ["bg-muted", "bg-destructive", "bg-amber-500", "bg-accent"];

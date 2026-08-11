@@ -1,7 +1,13 @@
 import { createFileRoute, Outlet, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { ShieldAlert, Loader2 } from "lucide-react";
-import { checkStaffAccess } from "@/lib/admin/admin.functions";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ShieldAlert, Loader2, KeyRound, FlaskConical } from "lucide-react";
+import { toast } from "sonner";
+import {
+  checkStaffAccess,
+  clearPasswordChangeRequirement,
+} from "@/lib/admin/admin.functions";
+import { PasswordChangeForm } from "@/components/password-change-form";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -29,6 +35,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminGate() {
+  const queryClient = useQueryClient();
   const { data, isPending } = useQuery({
     queryKey: ["admin", "staff-check"],
     queryFn: () => checkStaffAccess(),
@@ -66,5 +73,57 @@ function AdminGate() {
     );
   }
 
-  return <Outlet />;
+  if (data.mustChangePassword) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-muted/30 p-6">
+        <Card className="w-full max-w-md space-y-3 p-6">
+          <KeyRound className="h-8 w-8 text-primary" aria-hidden="true" />
+          <h1 className="text-lg font-semibold">Set a new password</h1>
+          <p className="text-sm text-muted-foreground">
+            This staff account was provisioned with a temporary password. Choose a new password to
+            continue into the admin workspace.
+          </p>
+          <PasswordChangeForm
+            onCancel={async () => {
+              await supabase.auth.signOut();
+              queryClient.clear();
+            }}
+            onSubmit={async (current, next) => {
+              const email = (await supabase.auth.getUser()).data.user?.email;
+              if (!email) throw new Error("Session expired — sign in again");
+              const { error: reauth } = await supabase.auth.signInWithPassword({
+                email,
+                password: current,
+              });
+              if (reauth) throw new Error("Current password is incorrect");
+              const { error } = await supabase.auth.updateUser({ password: next });
+              if (error) throw new Error(error.message);
+              await clearPasswordChangeRequirement();
+              toast.success("Password updated");
+              await queryClient.invalidateQueries({ queryKey: ["admin", "staff-check"] });
+            }}
+          />
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {data.isTestSeedAccount && (
+        <div
+          role="status"
+          className="flex items-start gap-2 border-b bg-accent/30 px-4 py-2 text-xs text-accent-foreground"
+        >
+          <FlaskConical className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <p>
+            <strong>Test account.</strong> This seeded Super Admin is for development and QA only.
+            It must be disabled or have its password rotated before the platform goes live, and it is
+            excluded from SAPS leadership reporting.
+          </p>
+        </div>
+      )}
+      <Outlet />
+    </>
+  );
 }

@@ -91,8 +91,13 @@ function AdminGate() {
               // verifies the current password, updates it, and clears the
               // temporary-password requirement in one step.
               await changePassword({ data: { currentPassword: current, newPassword: next } });
-              toast.success("Password updated");
-              await queryClient.invalidateQueries({ queryKey: ["admin", "staff-check"] });
+              toast.success("Password updated — please sign in with your new password");
+              // Changing the password invalidates the current session's refresh
+              // token, so sign out cleanly instead of leaving a dead session.
+              await queryClient.cancelQueries();
+              queryClient.clear();
+              await supabase.auth.signOut();
+              await router.navigate({ to: "/auth", replace: true });
             }}
           />
         </Card>

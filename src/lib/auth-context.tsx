@@ -26,6 +26,8 @@ export interface Profile {
 
 interface AuthState {
   status: "loading" | "ready";
+  /** True once profile + roles have been resolved for the current session. */
+  rolesLoaded: boolean;
   session: Session | null;
   user: User | null;
   profile: Profile | null;
@@ -53,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [status, setStatus] = useState<"loading" | "ready">("loading");
+  const [rolesLoaded, setRolesLoaded] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -61,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(newSession);
       if (newSession?.user) {
+        setRolesLoaded(false);
         // Defer DB calls to avoid deadlock with auth callback
         setTimeout(() => {
           if (!mounted) return;
@@ -68,11 +72,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!mounted) return;
             setProfile(profile);
             setRoles(roles);
+            setRolesLoaded(true);
           });
         }, 0);
       } else {
         setProfile(null);
         setRoles([]);
+        setRolesLoaded(true);
       }
     });
 
@@ -85,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(profile);
         setRoles(roles);
       }
+      setRolesLoaded(true);
       setStatus("ready");
     });
 
@@ -97,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthState>(
     () => ({
       status,
+      rolesLoaded,
       session,
       user: session?.user ?? null,
       profile,
@@ -112,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await supabase.auth.signOut();
       },
     }),
-    [status, session, profile, roles],
+    [status, rolesLoaded, session, profile, roles],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

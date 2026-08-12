@@ -1,11 +1,9 @@
-import { createFileRoute, Outlet, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldAlert, Loader2, KeyRound, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
-import {
-  checkStaffAccess,
-  clearPasswordChangeRequirement,
-} from "@/lib/admin/admin.functions";
+import { checkStaffAccess } from "@/lib/admin/admin.functions";
+import { changePassword } from "@/lib/profile.functions";
 import { PasswordChangeForm } from "@/components/password-change-form";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -36,6 +34,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminGate() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { data, isPending } = useQuery({
     queryKey: ["admin", "staff-check"],
     queryFn: () => checkStaffAccess(),
@@ -89,18 +88,17 @@ function AdminGate() {
               queryClient.clear();
             }}
             onSubmit={async (current, next) => {
-              const email = (await supabase.auth.getUser()).data.user?.email;
-              if (!email) throw new Error("Session expired — sign in again");
-              const { error: reauth } = await supabase.auth.signInWithPassword({
-                email,
-                password: current,
-              });
-              if (reauth) throw new Error("Current password is incorrect");
-              const { error } = await supabase.auth.updateUser({ password: next });
-              if (error) throw new Error(error.message);
-              await clearPasswordChangeRequirement();
-              toast.success("Password updated");
-              await queryClient.invalidateQueries({ queryKey: ["admin", "staff-check"] });
+              // Same server path as the citizen Security settings page: it
+              // verifies the current password, updates it, and clears the
+              // temporary-password requirement in one step.
+              await changePassword({ data: { currentPassword: current, newPassword: next } });
+              toast.success("Password updated — please sign in with your new password");
+              // Changing the password invalidates the current session's refresh
+              // token, so sign out cleanly instead of leaving a dead session.
+              await queryClient.cancelQueries();
+              queryClient.clear();
+              await supabase.auth.signOut();
+              await router.navigate({ to: "/auth", replace: true });
             }}
           />
         </Card>

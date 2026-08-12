@@ -45,14 +45,16 @@ const signUpSchema = z.object({
 
 function AuthPage() {
   const router = useRouter();
-  const { user, status, roles } = useAuth();
+  const { user, status, roles, rolesLoaded } = useAuth();
   const homePath = getHomePath(roles);
 
   useEffect(() => {
-    if (status === "ready" && user) {
+    // Wait for roles to resolve before redirecting, otherwise staff accounts
+    // fall through to the citizen dashboard on a race.
+    if (status === "ready" && user && rolesLoaded) {
       router.navigate({ to: homePath, replace: true });
     }
-  }, [user, status, homePath, router]);
+  }, [user, status, rolesLoaded, homePath, router]);
 
   return (
     <div className="grid min-h-dvh place-items-center bg-primary px-4 py-8 text-primary-foreground">

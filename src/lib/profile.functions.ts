@@ -266,8 +266,6 @@ export const updatePrivacySettings = createServerFn({ method: "POST" })
 
 // ── Password change ────────────────────────────────────────────────────────
 
-import { passwordRule } from "@/lib/password.rules";
-
 export const changePassword = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({ currentPassword: z.string().min(1), newPassword: passwordRule }).parse(d)
@@ -284,6 +282,11 @@ export const changePassword = createServerFn({ method: "POST" })
       password: data.newPassword,
     });
     if (error) throw new Error(error.message);
+    // Clear any temporary-password requirement (staff/seed accounts)
+    await supabaseAdmin
+      .from("profiles")
+      .update({ must_change_password: false })
+      .eq("id", user.id);
     return { ok: true };
   });
 

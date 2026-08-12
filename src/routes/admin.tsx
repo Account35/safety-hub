@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldAlert, Loader2, KeyRound, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminGate() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { data, isPending } = useQuery({
     queryKey: ["admin", "staff-check"],
     queryFn: () => checkStaffAccess(),

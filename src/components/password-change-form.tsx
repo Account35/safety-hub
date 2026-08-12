@@ -40,7 +40,13 @@ export function PasswordChangeForm({ onSubmit, onCancel }: Props) {
     try {
       await onSubmit(current, next);
     } catch (err: unknown) {
-      setErrors({ current: err instanceof Error ? err.message : "Current password is incorrect" });
+      const message =
+        err instanceof Error && err.message ? err.message : "Could not change password — please try again";
+      // Show the failure next to the field it belongs to so it is never a silent block.
+      if (/current password/i.test(message)) setErrors({ current: message });
+      else if (/password|character|uppercase|lowercase|number|symbol/i.test(message))
+        setErrors({ next: message });
+      else setErrors({ current: message });
     } finally {
       setLoading(false);
     }

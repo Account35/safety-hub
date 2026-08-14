@@ -65,7 +65,7 @@ export const getMapData = createServerFn({ method: "POST" })
       supabaseAdmin
         .from("missing_persons")
         .select("id, full_name, last_seen_location, last_seen_at, is_endangered, case_status")
-        .neq("case_status", "found_safe")
+        .neq("case_status", "found")
         .limit(400),
       supabaseAdmin
         .from("police_stations")

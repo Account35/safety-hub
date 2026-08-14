@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StationsRouteImport } from './routes/stations'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ActivityRouteImport } from './routes/activity'
@@ -51,6 +52,11 @@ const StationsRoute = StationsRouteImport.update({
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/map': typeof MapRoute
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/auth': typeof AuthRoute
+  '/map': typeof MapRoute
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -284,6 +292,7 @@ export interface FileRoutesById {
   '/activity': typeof ActivityRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/map': typeof MapRoute
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -320,6 +329,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/auth'
+    | '/map'
     | '/report'
     | '/stations'
     | '/dashboard'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/auth'
+    | '/map'
     | '/report'
     | '/stations'
     | '/dashboard'
@@ -388,6 +399,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/admin'
     | '/auth'
+    | '/map'
     | '/report'
     | '/stations'
     | '/_authenticated/dashboard'
@@ -424,6 +436,7 @@ export interface RootRouteChildren {
   ActivityRoute: typeof ActivityRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  MapRoute: typeof MapRoute
   ReportRoute: typeof ReportRoute
   StationsRoute: typeof StationsRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
@@ -457,6 +470,13 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -744,6 +764,7 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityRoute: ActivityRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  MapRoute: MapRoute,
   ReportRoute: ReportRoute,
   StationsRoute: StationsRoute,
   CampaignsIdRoute: CampaignsIdRoute,
@@ -765,3 +786,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

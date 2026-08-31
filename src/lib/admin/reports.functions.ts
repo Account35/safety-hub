@@ -333,7 +333,7 @@ export const recordReportOutcome = createServerFn({ method: "POST" })
       .update({
         outcome: data.outcome,
         outcome_notes: data.notes ?? null,
-        status: data.closeReport === false ? "actioned" : "closed",
+        status: data.closeReport === false ? "investigated" : "resolved",
       })
       .eq("id", data.id);
     if (error) throw new Error(error.message);

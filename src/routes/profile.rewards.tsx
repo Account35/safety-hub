@@ -5,7 +5,10 @@ import { PageShell } from "@/components/saps/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
 import { getMyRewards, submitRewardClaim } from "@/lib/rewards.functions";
+import { getRewardLeaderboard } from "@/lib/rewards/leaderboard.functions";
+
 import { getProfile } from "@/lib/profile.functions";
 import type { RewardEligibility, RewardClaim, ClaimStatus, PaymentMethodType } from "@/lib/rewards.functions";
 import type { UserProfile } from "@/lib/profile.functions";

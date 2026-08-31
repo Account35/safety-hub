@@ -456,15 +456,49 @@ function Wizard({
       clear();
       setStep("done");
     } catch (e) {
-      setSubmitError(
-        e instanceof Error
-          ? e.message
-          : "Submission failed. Please check your connection and try again.",
-      );
+      const offline = typeof navigator !== "undefined" && !navigator.onLine;
+      if (offline) {
+        // No signal: keep the whole report (including media) on the device and
+        // submit it automatically as soon as connectivity returns.
+        enqueueReport({
+          queuedAt: new Date().toISOString(),
+          caseId,
+          caseType,
+          reporterAnonCode: generateAnonCode(user?.id),
+          methods: draft.methods,
+          sightingDate: draft.sightingDate ?? null,
+          sightingTime: draft.sightingTime ?? null,
+          textDescription: draft.textDescription ?? null,
+          companionDescription: draft.companionDescription ?? null,
+          confidenceLevel: draft.confidence ?? null,
+          locationApproximate: draft.locationApproximate ?? null,
+          locationTownship: draft.locationTownship ?? null,
+          locationLandmarks: draft.locationLandmarks,
+          locationPrivacyLevel: draft.locationPrivacyLevel,
+          ownerId: user?.id ?? "guest",
+          voice: draft.voice ? { dataUrl: draft.voice.dataUrl } : null,
+          photos: draft.photos.map((p) => ({
+            dataUrl: p.dataUrl,
+            mimeType: p.mimeType,
+            caption: p.caption,
+          })),
+        });
+        clear();
+        setSubmitError(
+          "You are offline. Your report has been saved on this device and will be sent automatically as soon as you are back online.",
+        );
+      } else {
+        setSubmitError(
+          e instanceof Error
+            ? e.message
+            : "Submission failed. Please check your connection and try again.",
+        );
+      }
     } finally {
       setSubmitting(false);
     }
   }
+
 
   // Safety not yet acknowledged → show only modal over a dimmed shell.
   return (

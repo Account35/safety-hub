@@ -230,6 +230,14 @@ export function ActionGrid() {
           description={t.dashboard.actions.reportDesc}
           tone="accent"
         />
+        <ActionCard
+          to="/map"
+          icon={MapPin}
+          title="Safety map"
+          description="Cases, SAPS stations and area report density on one map"
+          tone="primary"
+        />
+
         {user && (
           <>
             <ActionCard

@@ -145,7 +145,11 @@ function RootComponent() {
             >
               Skip to main content
             </a>
+            <ClientOnly fallback={null}>
+              <OfflineQueueBanner />
+            </ClientOnly>
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+
             <Outlet />
             <Toaster richColors position="top-center" />
           </I18nProvider>

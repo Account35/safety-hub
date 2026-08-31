@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/reac
 import {
   Outlet,
   Link,
+  ClientOnly,
   createRootRouteWithContext,
   useRouter,
   HeadContent,
@@ -14,8 +15,10 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { OfflineQueueBanner } from "@/components/report/offline-queue-banner";
 import { I18nProvider } from "@/lib/i18n/i18n-context";
 import { AccessibilityProvider } from "@/lib/accessibility/accessibility-context";
+
 
 function NotFoundComponent() {
   return (
@@ -145,7 +148,11 @@ function RootComponent() {
             >
               Skip to main content
             </a>
+            <ClientOnly fallback={null}>
+              <OfflineQueueBanner />
+            </ClientOnly>
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+
             <Outlet />
             <Toaster richColors position="top-center" />
           </I18nProvider>

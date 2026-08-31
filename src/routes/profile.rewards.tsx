@@ -5,7 +5,10 @@ import { PageShell } from "@/components/saps/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
 import { getMyRewards, submitRewardClaim } from "@/lib/rewards.functions";
+import { getRewardLeaderboard } from "@/lib/rewards/leaderboard.functions";
+
 import { getProfile } from "@/lib/profile.functions";
 import type { RewardEligibility, RewardClaim, ClaimStatus, PaymentMethodType } from "@/lib/rewards.functions";
 import type { UserProfile } from "@/lib/profile.functions";
@@ -197,9 +200,88 @@ function RewardsPage() {
           </div>
         </section>
       )}
+
+      <LeaderboardSection />
     </PageShell>
   );
 }
+
+// ── Anonymous community leaderboard ────────────────────────────────────────
+
+function LeaderboardSection() {
+  const { data, isPending, error } = useQuery({
+    queryKey: ["rewards", "leaderboard"],
+    queryFn: () => getRewardLeaderboard(),
+    staleTime: 60_000,
+  });
+
+  if (error) return null;
+
+  return (
+    <section aria-labelledby="sec-leaderboard" className="mt-8">
+      <h3
+        id="sec-leaderboard"
+        className="mb-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground"
+      >
+        Community leaderboard
+      </h3>
+      <p className="mb-3 text-xs text-muted-foreground">
+        Top contributors by verified, rewarded tip-offs. Only anonymous reporter codes are shown —
+        never names or contact details.
+      </p>
+
+      {isPending ? (
+        <Skeleton className="h-40 rounded-xl" />
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <table className="w-full text-sm">
+              <caption className="sr-only">Anonymous reward leaderboard</caption>
+              <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th scope="col" className="px-4 py-2">#</th>
+                  <th scope="col" className="px-4 py-2">Reporter</th>
+                  <th scope="col" className="px-4 py-2">Verified tips</th>
+                  <th scope="col" className="px-4 py-2">Rewarded</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data?.entries ?? []).map((e) => (
+                  <tr
+                    key={e.rank}
+                    className={cn("border-t border-border", e.isMe && "bg-accent/30 font-medium")}
+                  >
+                    <td className="px-4 py-2">{e.rank}</td>
+                    <td className="px-4 py-2 font-mono text-xs">
+                      {e.anonCode}
+                      {e.isMe ? " (you)" : ""}
+                    </td>
+                    <td className="px-4 py-2">{e.verifiedReports}</td>
+                    <td className="px-4 py-2">{formatRand(e.totalRewarded)}</td>
+                  </tr>
+                ))}
+                {!(data?.entries ?? []).length && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-muted-foreground">
+                      No rewarded tip-offs yet — be the first.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+      {data?.myEntry && !data.entries.some((e) => e.isMe) && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Your rank: #{data.myEntry.rank} of {data.totalContributors} contributors.
+        </p>
+      )}
+    </section>
+  );
+}
+
 
 // ── Reward cards ───────────────────────────────────────────────────────────
 

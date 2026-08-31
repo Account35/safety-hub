@@ -64,6 +64,9 @@ function AdminAnalyticsPage() {
           ))}
         </ul>
       </Card>
+
+      <ForecastPanel />
     </AdminShell>
+
   );
 }

@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, TrendingDown, TrendingUp } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { getAdminAnalytics } from "@/lib/admin/analytics.functions";
+import { getCrimeForecast } from "@/lib/admin/forecast.functions";
 import { useStaff } from "@/lib/admin/use-staff";
+
 
 export const Route = createFileRoute("/admin/analytics")({
   head: () => ({

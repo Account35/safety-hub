@@ -22,6 +22,8 @@ import { useReportDraft } from "@/lib/reports/draft";
 import { generateAnonCode } from "@/lib/reports/reference";
 import { dataUrlToBlob } from "@/lib/reports/exif-strip";
 import { openReportFlow } from "@/lib/reports/navigation";
+import { enqueueReport } from "@/lib/reports/offline-queue";
+
 import { getCaseSummary, submitReport } from "@/lib/reports/reports.functions";
 import { listMissing, listWanted } from "@/lib/cases/cases.functions";
 import { formatRelative, timeMissingLabel } from "@/lib/cases/filters";

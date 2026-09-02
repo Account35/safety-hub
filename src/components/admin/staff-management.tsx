@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StaffDeleteDialog } from "@/components/admin/staff-delete-dialog";
+import { BulkStaffDialog } from "@/components/admin/bulk-staff-dialog";
 import {
   addStaffByEmail,
   listStaffAccounts,
@@ -61,6 +62,10 @@ export function StaffManagement() {
           Super admin only. Adding, revoking and deleting staff accounts is recorded in the audit
           trail.
         </p>
+
+        <div className="mb-5">
+          <BulkStaffDialog />
+        </div>
 
         <form
           className="mb-5 grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end"

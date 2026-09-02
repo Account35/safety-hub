@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ShieldAlert, Loader2, KeyRound, FlaskConical } from "lucide-react";
+import { ShieldAlert, Loader2, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { checkStaffAccess } from "@/lib/admin/admin.functions";
 import { changePassword } from "@/lib/profile.functions";
@@ -106,22 +106,5 @@ function AdminGate() {
     );
   }
 
-  return (
-    <>
-      {data.isTestSeedAccount && (
-        <div
-          role="status"
-          className="flex items-start gap-2 border-b bg-accent/30 px-4 py-2 text-xs text-accent-foreground"
-        >
-          <FlaskConical className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <p>
-            <strong>Test account.</strong> This seeded Super Admin is for development and QA only.
-            It must be disabled or have its password rotated before the platform goes live, and it is
-            excluded from SAPS leadership reporting.
-          </p>
-        </div>
-      )}
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 }

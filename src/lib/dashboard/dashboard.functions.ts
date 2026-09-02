@@ -12,6 +12,83 @@ export interface WeatherResult {
   observedAt: string;
 }
 
+/**
+ * Integration point for a paid weather provider (OpenWeatherMap-compatible).
+ * Add the key later as a secret named WEATHER_API_KEY — never hardcode it.
+ * Until the key exists, we fall back to the keyless Open-Meteo endpoint.
+ */
+async function fetchFromProvider(
+  lat: number,
+  lng: number,
+  apiKey: string,
+): Promise<Omit<WeatherResult, "areaLabel"> | null> {
+  const url =
+    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}` +
+    `&units=metric&appid=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  const json = (await res.json()) as {
+    dt?: number;
+    main?: { temp: number; feels_like: number };
+    wind?: { speed: number };
+    weather?: { id: number; icon: string }[];
+  };
+  if (!json.main) return null;
+  const w = json.weather?.[0];
+  return {
+    temperatureC: Math.round(json.main.temp),
+    apparentC: Math.round(json.main.feels_like),
+    windKph: Math.round((json.wind?.speed ?? 0) * 3.6),
+    // Map OpenWeather condition ids onto the WMO-style codes the widget renders.
+    code: mapOpenWeatherCode(w?.id ?? 800),
+    isDay: (w?.icon ?? "d").endsWith("d"),
+    observedAt: new Date((json.dt ?? Date.now() / 1000) * 1000).toISOString(),
+  };
+}
+
+function mapOpenWeatherCode(id: number): number {
+  if (id >= 200 && id < 300) return 95; // thunderstorm
+  if (id >= 300 && id < 400) return 51; // drizzle
+  if (id >= 500 && id < 600) return 63; // rain
+  if (id >= 600 && id < 700) return 73; // snow
+  if (id >= 700 && id < 800) return 45; // fog / atmosphere
+  if (id === 800) return 0; // clear
+  if (id === 801 || id === 802) return 2; // few / scattered clouds
+  return 3; // overcast
+}
+
+async function fetchFromOpenMeteo(
+  lat: number,
+  lng: number,
+): Promise<Omit<WeatherResult, "areaLabel"> | null> {
+  const url =
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
+    `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day` +
+    `&timezone=Africa%2FJohannesburg`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  const json = (await res.json()) as {
+    current?: {
+      time: string;
+      temperature_2m: number;
+      apparent_temperature: number;
+      weather_code: number;
+      wind_speed_10m: number;
+      is_day: number;
+    };
+  };
+  const c = json.current;
+  if (!c) return null;
+  return {
+    temperatureC: Math.round(c.temperature_2m),
+    apparentC: Math.round(c.apparent_temperature),
+    windKph: Math.round(c.wind_speed_10m),
+    code: c.weather_code,
+    isDay: c.is_day === 1,
+    observedAt: c.time,
+  };
+}
+
 export const getAreaWeather = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
     z.object({ area: z.string().max(120).nullable().optional() }).parse(data),
@@ -19,38 +96,19 @@ export const getAreaWeather = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<WeatherResult | null> => {
     const { resolveAreaCoords } = await import("@/lib/geo/townships-geo");
     const spot = resolveAreaCoords(data.area ?? null);
+    const apiKey = process.env["WEATHER_API_KEY"];
     try {
-      const url =
-        `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lng}` +
-        `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day` +
-        `&timezone=Africa%2FJohannesburg`;
-      const res = await fetch(url);
-      if (!res.ok) return null;
-      const json = (await res.json()) as {
-        current?: {
-          time: string;
-          temperature_2m: number;
-          apparent_temperature: number;
-          weather_code: number;
-          wind_speed_10m: number;
-          is_day: number;
-        };
-      };
-      const c = json.current;
-      if (!c) return null;
-      return {
-        areaLabel: spot.label,
-        temperatureC: Math.round(c.temperature_2m),
-        apparentC: Math.round(c.apparent_temperature),
-        windKph: Math.round(c.wind_speed_10m),
-        code: c.weather_code,
-        isDay: c.is_day === 1,
-        observedAt: c.time,
-      };
+      const current = apiKey
+        ? ((await fetchFromProvider(spot.lat, spot.lng, apiKey)) ??
+          (await fetchFromOpenMeteo(spot.lat, spot.lng)))
+        : await fetchFromOpenMeteo(spot.lat, spot.lng);
+      if (!current) return null;
+      return { areaLabel: spot.label, ...current };
     } catch {
       return null;
     }
   });
+
 
 // ── News ticker + safety tips (from campaigns) ─────────────────────────────
 export interface TickerItem {

@@ -297,6 +297,16 @@ export const assignReport = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
 
+    // Ensure the case-scoped reporter conversation exists for the new assignee.
+    if (data.assignedTo) {
+      const { ensureCaseThread } = await import("@/lib/admin/case-chat.server");
+      try {
+        await ensureCaseThread(ctx.supabaseAdmin, data.id);
+      } catch (e) {
+        console.error("[case-chat] could not ensure thread", e);
+      }
+    }
+
     await logAdminAction(ctx, "report.assign", "report", data.id, {
       assigned_to: data.assignedTo,
       priority: data.priority ?? null,

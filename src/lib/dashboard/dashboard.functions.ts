@@ -218,9 +218,18 @@ export const listStations = createServerFn({ method: "POST" })
         }))
         .sort((a, b) => a.distanceKm - b.distanceKm) as StationRow[];
 
+      // Province list is always the full national set, independent of filters.
+      const { data: provinceRows } = await supabaseAdmin
+        .from("police_stations")
+        .select("province");
       const provinces = Array.from(
-        new Set(rows.map((r) => r.province).filter((p): p is string => Boolean(p))),
+        new Set(
+          (provinceRows ?? [])
+            .map((r) => r.province)
+            .filter((p): p is string => Boolean(p)),
+        ),
       ).sort();
+
 
       return {
         areaLabel: spot.label,

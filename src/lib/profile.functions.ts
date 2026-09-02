@@ -165,7 +165,7 @@ export const getMyReports = createServerFn({ method: "POST" })
         const { data: conv } = await supabaseAdmin
           .from("conversations")
           .select("id")
-          .eq("report_id", r.report_id)
+          .eq("report_id", r.id)
           .maybeSingle();
 
         return {
@@ -230,7 +230,7 @@ export const trackReportByReference = createServerFn({ method: "POST" })
     const { data: conv } = await supabaseAdmin
       .from("conversations")
       .select("id")
-      .eq("report_id", r.report_id)
+      .eq("report_id", r.id)
       .maybeSingle();
 
     return {

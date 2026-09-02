@@ -145,45 +145,92 @@ export interface StationRow {
   distanceKm: number;
 }
 
+/**
+ * Province-agnostic national station lookup. Paginates through the whole
+ * police_stations table (PostgREST caps a single response at 1000 rows) so
+ * results cover every province, then orders by distance from the caller's
+ * approximate area.
+ */
 export const listStations = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
     z
       .object({
         area: z.string().max(120).nullable().optional(),
         q: z.string().max(120).optional(),
-        limit: z.number().int().min(1).max(60).optional(),
+        province: z.string().max(60).nullable().optional(),
+        limit: z.number().int().min(1).max(500).optional(),
       })
       .parse(data),
   )
   .handler(
-    async ({ data }): Promise<{ areaLabel: string; stations: StationRow[] }> => {
+    async ({
+      data,
+    }): Promise<{
+      areaLabel: string;
+      stations: StationRow[];
+      provinces: string[];
+      total: number;
+    }> => {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { resolveAreaCoords, haversineKm } = await import("@/lib/geo/townships-geo");
       const spot = resolveAreaCoords(data.area ?? null);
 
-      let q = supabaseAdmin
-        .from("police_stations")
-        .select("id, name, address, phone, township, province, is_24_hour, lat, lng");
-      if (data.q?.trim()) {
-        const needle = `%${data.q.trim()}%`;
-        q = q.or(`name.ilike.${needle},township.ilike.${needle},address.ilike.${needle}`);
-      }
-      const { data: rows, error } = await q;
-      if (error) throw new Error(error.message);
+      const PAGE = 1000;
+      const columns = "id, name, address, phone, township, province, is_24_hour, lat, lng";
+      type Raw = {
+        id: string;
+        name: string;
+        address: string;
+        phone: string | null;
+        township: string;
+        province: string | null;
+        is_24_hour: boolean;
+        lat: number | string;
+        lng: number | string;
+      };
+      const rows: Raw[] = [];
 
-      const stations = (rows ?? [])
+      for (let page = 0; ; page += 1) {
+        let q = supabaseAdmin
+          .from("police_stations")
+          .select(columns)
+          .order("name", { ascending: true })
+          .range(page * PAGE, page * PAGE + PAGE - 1);
+        if (data.q?.trim()) {
+          const needle = `%${data.q.trim()}%`;
+          q = q.or(
+            `name.ilike.${needle},township.ilike.${needle},address.ilike.${needle},province.ilike.${needle}`,
+          );
+        }
+        if (data.province?.trim()) q = q.eq("province", data.province.trim());
+        const { data: chunk, error } = await q;
+        if (error) throw new Error(error.message);
+        rows.push(...((chunk ?? []) as Raw[]));
+        if (!chunk || chunk.length < PAGE) break;
+      }
+
+      const ranked = rows
         .map((r) => ({
           ...r,
           lat: Number(r.lat),
           lng: Number(r.lng),
           distanceKm: haversineKm(spot, { lat: Number(r.lat), lng: Number(r.lng) }),
         }))
-        .sort((a, b) => a.distanceKm - b.distanceKm)
-        .slice(0, data.limit ?? 40) as StationRow[];
+        .sort((a, b) => a.distanceKm - b.distanceKm) as StationRow[];
 
-      return { areaLabel: spot.label, stations };
+      const provinces = Array.from(
+        new Set(rows.map((r) => r.province).filter((p): p is string => Boolean(p))),
+      ).sort();
+
+      return {
+        areaLabel: spot.label,
+        stations: ranked.slice(0, data.limit ?? 100),
+        provinces,
+        total: ranked.length,
+      };
     },
   );
+
 
 // ── Dashboard case carousels ──────────────────────────────────────────────
 export interface CarouselCase {

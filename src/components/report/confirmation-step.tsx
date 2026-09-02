@@ -69,6 +69,11 @@ export function ConfirmationStep({
         </Button>
         {isAuthenticated ? (
           <Button asChild variant="outline">
+            <Link to="/track">Track This Report</Link>
+          </Button>
+        ) : null}
+        {isAuthenticated ? (
+          <Button asChild variant="outline">
             <Link to="/profile/reports">View My Reports</Link>
           </Button>
         ) : (

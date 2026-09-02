@@ -163,8 +163,10 @@ export function CaseChatPanel({ reportId }: { reportId: string }) {
 
       {pii ? (
         <ChatPiiWarningModal
+          open
           detectedText={pii.detected}
           onEdit={() => setPii(null)}
+          onCancel={() => setPii(null)}
           onSendAnyway={() => {
             send.mutate(pii.text);
             setPii(null);

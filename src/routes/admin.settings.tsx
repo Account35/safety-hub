@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { listAuditLog, getAdminSettings } from "@/lib/admin/settings.functions";
 import { useStaff } from "@/lib/admin/use-staff";
+import { StaffManagement } from "@/components/admin/staff-management";
 
 export const Route = createFileRoute("/admin/settings")({
   head: () => ({
@@ -18,7 +19,8 @@ export const Route = createFileRoute("/admin/settings")({
 });
 
 function AdminSettingsPage() {
-  const { roles } = useStaff();
+  const { roles, can } = useStaff();
+  const isSuperAdmin = can("super_admin");
   const settings = useQuery({ queryKey: ["admin", "settings"], queryFn: () => getAdminSettings() });
   const audit = useQuery({ queryKey: ["admin", "audit"], queryFn: () => listAuditLog({ data: {} }) });
 
@@ -28,6 +30,8 @@ function AdminSettingsPage() {
       description="Every staff action is recorded in an immutable audit trail."
       roles={roles}
     >
+      {isSuperAdmin ? <StaffManagement /> : null}
+
       <Card className="mb-6 p-4">
         <h2 className="mb-3 text-sm font-semibold">Configuration</h2>
         {settings.error ? (

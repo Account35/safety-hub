@@ -67,10 +67,13 @@ export const getMapData = createServerFn({ method: "POST" })
         .select("id, full_name, last_seen_location, last_seen_at, is_endangered, case_status")
         .neq("case_status", "found")
         .limit(400),
+      // Nationwide: no province or city scoping, and a range high enough for
+      // the full national station dataset.
       supabaseAdmin
         .from("police_stations")
         .select("id, name, lat, lng, phone, is_24_hour")
-        .limit(400),
+        .order("name", { ascending: true })
+        .range(0, 4999),
       supabaseAdmin
         .from("reports")
         .select("location_approximate, location_township")

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Shield, Clock, Search, CheckCircle, Ribbon } from "lucide-react";
 import { PageShell } from "@/components/saps/page-shell";
+import { BackButton } from "@/components/saps/back-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -63,7 +64,6 @@ interface Payment { method: PaymentMethodType; details: Record<string, string>; 
 
 function RewardsPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [view, setView] = useState<View>({ type: "dashboard" });
   const [rewards, setRewards] = useState<RewardEligibility[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -136,9 +136,7 @@ function RewardsPage() {
   return (
     <PageShell>
       <div className="flex items-center gap-3 mb-2">
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/profile" })} aria-label="Back to profile" tabIndex={0}>
-          <ArrowLeft className="size-5" />
-        </Button>
+        <BackButton label="Go back" />
         <h1 className="text-xl font-bold text-primary">My Rewards</h1>
       </div>
       <p className="text-sm text-muted-foreground mb-6">

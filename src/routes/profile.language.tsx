@@ -1,6 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Check } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Check } from "lucide-react";
 import { PageShell } from "@/components/saps/page-shell";
+import { BackButton } from "@/components/saps/back-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LANGUAGES, type LanguageCode } from "@/lib/i18n/registry";
@@ -13,7 +14,6 @@ export const Route = createFileRoute("/profile/language")({
 });
 
 function LanguagePage() {
-  const navigate = useNavigate();
   const { language, setLanguage, t } = useTranslation();
 
   async function pick(code: LanguageCode) {
@@ -24,14 +24,7 @@ function LanguagePage() {
   return (
     <PageShell>
       <div className="flex items-center gap-3 mb-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate({ to: "/profile" })}
-          aria-label={t("common.back")}
-        >
-          <ArrowLeft className="size-5" />
-        </Button>
+        <BackButton label={t("common.back")} />
         <h1 className="text-xl font-bold text-primary">{t("language.pageTitle")}</h1>
       </div>
 

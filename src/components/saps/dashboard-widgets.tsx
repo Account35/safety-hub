@@ -17,13 +17,14 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { t } from "@/lib/i18n/en";
 import { listStations } from "@/lib/dashboard/dashboard.functions";
 import { CrimeStatsModal } from "@/components/saps/crime-stats-modal";
+import { AreaSelect } from "@/components/area-select";
+import { readDraft, writeDraft, clearDraft } from "@/lib/ui/sticky-draft";
 
 function greetingFor(date: Date) {
   const h = date.getHours();
@@ -86,6 +87,8 @@ export function TimeAndGreeting() {
   );
 }
 
+const AREA_DRAFT_KEY = "dashboard:area";
+
 export function LocationCard() {
   const { user, profile, refresh } = useAuth();
   const [editing, setEditing] = useState(false);
@@ -93,8 +96,12 @@ export function LocationCard() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setValue(profile?.area ?? "");
-  }, [profile?.area]);
+    // Never clobber an in-progress selection when the profile refreshes.
+    if (editing) return;
+    const saved = readDraft(AREA_DRAFT_KEY);
+    setValue(saved ?? profile?.area ?? "");
+    if (saved || readDraft("dashboard:area:search")) setEditing(true);
+  }, [profile?.area, editing]);
 
   if (!user) {
     return (
@@ -124,6 +131,8 @@ export function LocationCard() {
       return;
     }
     toast.success("Area updated");
+    clearDraft(AREA_DRAFT_KEY);
+    clearDraft("dashboard:area:search");
     setEditing(false);
     await refresh();
   };
@@ -138,17 +147,34 @@ export function LocationCard() {
               {t.dashboard.locationLabel}
             </p>
             {editing ? (
-              <div className="mt-1 flex gap-2">
-                <Input
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  placeholder="e.g. Soweto"
-                  className="h-10 w-48"
-                  aria-label="Area name"
+              <div className="mt-1 space-y-2">
+                <AreaSelect
+                  value={value || null}
+                  onChange={(v) => {
+                    setValue(v);
+                    writeDraft(AREA_DRAFT_KEY, v);
+                  }}
+                  storageKey="dashboard:area:search"
+                  label="Area"
                 />
-                <Button onClick={save} disabled={saving} size="sm" className="h-10">
-                  {t.dashboard.saveArea}
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={save} disabled={saving || !value} size="sm" className="h-10">
+                    {t.dashboard.saveArea}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-10"
+                    onClick={() => {
+                      clearDraft(AREA_DRAFT_KEY);
+                      clearDraft("dashboard:area:search");
+                      setValue(profile?.area ?? "");
+                      setEditing(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
             ) : (
               <p className="font-semibold">{profile?.area || "Not set"}</p>

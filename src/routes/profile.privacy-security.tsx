@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Shield, Monitor, Smartphone } from "lucide-react";
 import { PageShell } from "@/components/saps/page-shell";
+import { BackButton } from "@/components/saps/back-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,9 +74,7 @@ function PrivacySecurityPage() {
   return (
     <PageShell>
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/profile" })} aria-label="Back to profile" tabIndex={0}>
-          <ArrowLeft className="size-5" />
-        </Button>
+        <BackButton label="Go back" />
         <h1 className="text-xl font-bold text-primary">Privacy & Security</h1>
       </div>
 

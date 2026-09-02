@@ -7,9 +7,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { fuzzCoords } from "@/lib/reports/fuzz";
 import { TOWNSHIPS } from "@/lib/reports/townships";
 import { PRIVACY_LABELS } from "@/lib/reports/draft";
+import { readDraft, writeDraft } from "@/lib/ui/sticky-draft";
 import type { ReportDraft, PrivacyLevel } from "@/lib/reports/types";
 
 type Mode = "auto" | "list" | "landmark";
+
+const SEARCH_KEY = "report:area:search";
 
 const PRIVACY_NOTES: Record<PrivacyLevel, string> = {
   township: "Investigators know which township. Maximum privacy.",
@@ -31,7 +34,7 @@ export function LocationStep({
   const [mode, setMode] = useState<Mode | null>(
     draft.locationApproximate ? "auto" : draft.locationTownship ? "list" : draft.locationLandmarks.length ? "landmark" : null,
   );
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => readDraft(SEARCH_KEY) ?? "");
   const [geoError, setGeoError] = useState<string | null>(null);
   const [requesting, setRequesting] = useState(false);
 
@@ -45,10 +48,9 @@ export function LocationStep({
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const fuzzed = fuzzCoords(pos.coords.latitude, pos.coords.longitude);
-        onChange({
-          locationApproximate: fuzzed,
-          locationTownship: draft.locationTownship ?? "Approximate area",
-        });
+        // Never store filler text as the area name — leave it unset unless
+        // the reporter actually picked an area from the list.
+        onChange({ locationApproximate: fuzzed });
         setMode("auto");
         setRequesting(false);
       },
@@ -116,8 +118,12 @@ export function LocationStep({
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search townships…"
+              onChange={(e) => {
+                setSearch(e.target.value);
+                writeDraft(SEARCH_KEY, e.target.value);
+              }}
+              placeholder="Search areas"
+              aria-label="Search areas"
               className="pl-8"
             />
           </div>

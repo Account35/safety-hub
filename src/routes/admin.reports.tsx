@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { listAdminReports } from "@/lib/admin/reports.functions";
 import { useStaff } from "@/lib/admin/use-staff";
+import { TOWNSHIPS } from "@/lib/reports/townships";
 
 export const Route = createFileRoute("/admin/reports")({
   head: () => ({
@@ -24,13 +25,18 @@ const STATUSES = ["all", "submitted", "under_review", "actioned", "closed"];
 function AdminReportsPage() {
   const { roles } = useStaff();
   const [status, setStatus] = useState("all");
+  const [township, setTownship] = useState("all");
   const [q, setQ] = useState("");
 
   const { data, isPending, error } = useQuery({
-    queryKey: ["admin", "reports", status, q],
+    queryKey: ["admin", "reports", status, township, q],
     queryFn: () =>
       listAdminReports({
-        data: { ...(status !== "all" ? { status } : {}), ...(q.trim() ? { q: q.trim() } : {}) },
+        data: {
+          ...(status !== "all" ? { status } : {}),
+          ...(township !== "all" ? { township } : {}),
+          ...(q.trim() ? { q: q.trim() } : {}),
+        },
       }),
   });
 
@@ -56,12 +62,25 @@ function AdminReportsPage() {
             {s.replace("_", " ")}
           </button>
         ))}
+        <select
+          value={township}
+          onChange={(e) => setTownship(e.target.value)}
+          aria-label="Filter by area"
+          className="ml-auto h-9 rounded-md border border-border bg-background px-2 text-xs"
+        >
+          <option value="all">All areas</option>
+          {TOWNSHIPS.map((tn) => (
+            <option key={tn} value={tn}>
+              {tn}
+            </option>
+          ))}
+        </select>
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search reference or area"
+          placeholder="Search reference"
           aria-label="Search reports"
-          className="ml-auto w-full sm:w-64"
+          className="w-full sm:w-56"
         />
       </div>
 

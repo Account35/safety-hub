@@ -206,7 +206,7 @@ function AdminReportDetailPage() {
         </div>
       ) : null}
 
-      {report.data ? <CaseChatPanel reportId={reportId} /> : null}
+      {data && !isPending ? <CaseChatPanel reportId={reportId} /> : null}
     </AdminShell>
   );
 }

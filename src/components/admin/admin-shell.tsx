@@ -8,7 +8,6 @@ import {
   Megaphone,
   BarChart3,
   Settings,
-  ArrowLeft,
   ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

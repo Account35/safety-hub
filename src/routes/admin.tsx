@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ShieldAlert, Loader2, KeyRound, FlaskConical } from "lucide-react";
+import { ShieldAlert, Loader2, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { checkStaffAccess } from "@/lib/admin/admin.functions";
 import { changePassword } from "@/lib/profile.functions";

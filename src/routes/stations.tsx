@@ -35,11 +35,13 @@ function StationsPage() {
   const { profile } = useAuth();
   const stationsFn = useServerFn(listStations);
   const [q, setQ] = useState("");
+  const [province, setProvince] = useState<string>("");
   const area = profile?.area ?? null;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["stations", area, q],
-    queryFn: () => stationsFn({ data: { area, q, limit: 60 } }),
+    queryKey: ["stations", area, q, province],
+    queryFn: () =>
+      stationsFn({ data: { area, q, province: province || null, limit: 200 } }),
   });
 
   return (
@@ -68,6 +70,30 @@ function StationsPage() {
             className="h-11 pl-9"
             aria-label="Search stations"
           />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor="province" className="text-sm text-muted-foreground">
+            Province
+          </label>
+          <select
+            id="province"
+            value={province}
+            onChange={(e) => setProvince(e.target.value)}
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">All provinces</option>
+            {(data?.provinces ?? []).map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+          {typeof data?.total === "number" && (
+            <span className="text-xs text-muted-foreground">
+              {data.stations.length} of {data.total} stations shown
+            </span>
+          )}
         </div>
 
         {isLoading ? (

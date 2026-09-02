@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { CaseChatPanel } from "@/components/admin/case-chat-panel";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -204,6 +205,8 @@ function AdminReportDetailPage() {
           </div>
         </div>
       ) : null}
+
+      {report.data ? <CaseChatPanel reportId={reportId} /> : null}
     </AdminShell>
   );
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Shield, FileText, MessageSquare, Bell, Lock, Gift, Languages, Accessibility, ChevronRight } from "lucide-react";
+import { Shield, FileText, MessageSquare, Bell, Lock, Gift, Languages, Accessibility, ChevronRight, Search} from "lucide-react";
 import { PageShell } from "@/components/saps/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -251,6 +251,15 @@ function AuthenticatedProfile({ roles }: { roles: string[] }) {
           </Link>
         ))}
       </div>
+      {/* Track a report — full-width */}
+      <Link to="/track" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors focus-visible:outline-2 mb-3">
+        <Search className="size-5 text-primary shrink-0" aria-hidden="true" />
+        <div className="flex-1">
+          <span className="text-sm font-semibold">Track a Report</span>
+          <p className="text-xs text-muted-foreground">Check status with your reference number</p>
+        </div>
+      </Link>
+
       {/* My Rewards — full-width fifth card */}
       <Link to="/profile/rewards" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors focus-visible:outline-2 mb-6">
         <Gift className="size-5 text-primary shrink-0" aria-hidden="true" />

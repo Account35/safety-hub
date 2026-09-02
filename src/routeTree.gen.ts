@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrackRouteImport } from './routes/track'
 import { Route as StationsRouteImport } from './routes/stations'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as MapRouteImport } from './routes/map'
@@ -44,6 +45,11 @@ import { Route as AdminReportReportIdRouteImport } from './routes/admin.report.$
 import { Route as ApiPublicHooksClusterSweepRouteImport } from './routes/api/public/hooks/cluster-sweep'
 import { Route as ApiPublicHooksCampaignDispatchRouteImport } from './routes/api/public/hooks/campaign-dispatch'
 
+const TrackRoute = TrackRouteImport.update({
+  id: '/track',
+  path: '/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StationsRoute = StationsRouteImport.update({
   id: '/stations',
   path: '/stations',
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/map': typeof MapRoute
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
+  '/track': typeof TrackRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/map': typeof MapRoute
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
+  '/track': typeof TrackRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/map': typeof MapRoute
   '/report': typeof ReportRoute
   '/stations': typeof StationsRoute
+  '/track': typeof TrackRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/campaigns': typeof AdminCampaignsRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/report'
     | '/stations'
+    | '/track'
     | '/dashboard'
     | '/admin/analytics'
     | '/admin/campaigns'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/report'
     | '/stations'
+    | '/track'
     | '/dashboard'
     | '/admin/analytics'
     | '/admin/campaigns'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/report'
     | '/stations'
+    | '/track'
     | '/_authenticated/dashboard'
     | '/admin/analytics'
     | '/admin/campaigns'
@@ -439,6 +451,7 @@ export interface RootRouteChildren {
   MapRoute: typeof MapRoute
   ReportRoute: typeof ReportRoute
   StationsRoute: typeof StationsRoute
+  TrackRoute: typeof TrackRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
   CasesMissingRoute: typeof CasesMissingRouteWithChildren
   CasesWantedRoute: typeof CasesWantedRouteWithChildren
@@ -458,6 +471,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/track': {
+      id: '/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof TrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stations': {
       id: '/stations'
       path: '/stations'
@@ -767,6 +787,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapRoute: MapRoute,
   ReportRoute: ReportRoute,
   StationsRoute: StationsRoute,
+  TrackRoute: TrackRoute,
   CampaignsIdRoute: CampaignsIdRoute,
   CasesMissingRoute: CasesMissingRouteWithChildren,
   CasesWantedRoute: CasesWantedRouteWithChildren,

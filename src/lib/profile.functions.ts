@@ -165,7 +165,7 @@ export const getMyReports = createServerFn({ method: "POST" })
         const { data: conv } = await supabaseAdmin
           .from("conversations")
           .select("id")
-          .eq("report_id", r.report_id)
+          .eq("report_id", r.id)
           .maybeSingle();
 
         return {
@@ -190,6 +190,72 @@ export const getMyReports = createServerFn({ method: "POST" })
     );
 
     return { items, total: count ?? 0 };
+  });
+
+// ── Report tracking by reference ────────────────────────────────────────────
+
+export interface ReportTrackingResult {
+  found: boolean;
+  report?: ReportHistoryItem & { updated_at: string; outcome: string | null };
+}
+
+export const trackReportByReference = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({ reference: z.string().trim().min(4).max(40) }).parse(d),
+  )
+  .handler(async ({ data }): Promise<ReportTrackingResult> => {
+    const { supabaseAdmin, user } = await getAdminAndUser();
+    const reference = data.reference.toUpperCase().replace(/\s+/g, "");
+
+    // Only ever return a report that belongs to the signed-in reporter.
+    const { data: r, error } = await supabaseAdmin
+      .from("reports")
+      .select("*")
+      .eq("reporter_id", user.id)
+      .eq("report_id", reference)
+      .maybeSingle();
+    if (error || !r) return { found: false };
+
+    let case_name: string | undefined;
+    let case_photo: string | null | undefined;
+    const table = r.case_type === "wanted" ? "wanted_persons" : "missing_persons";
+    const { data: c } = await supabaseAdmin
+      .from(table)
+      .select("full_name, photos")
+      .eq("id", r.case_id)
+      .maybeSingle();
+    case_name = c?.full_name;
+    case_photo = c?.photos?.[0] ?? null;
+
+    const { data: conv } = await supabaseAdmin
+      .from("conversations")
+      .select("id")
+      .eq("report_id", r.id)
+      .maybeSingle();
+
+    return {
+      found: true,
+      report: {
+        id: r.id,
+        report_id: r.report_id,
+        case_id: r.case_id,
+        case_type: r.case_type as "wanted" | "missing",
+        status: r.status as ReportHistoryItem["status"],
+        submission_timestamp: r.submission_timestamp,
+        reporting_methods: r.reporting_methods,
+        text_description: r.text_description,
+        voice_recording_path: r.voice_recording_path,
+        photos: (r.photos as { path: string; caption: string }[]) ?? [],
+        location_township: r.location_township,
+        sighting_date: r.sighting_date,
+        sighting_time: r.sighting_time,
+        case_name,
+        case_photo,
+        conversation_id: conv?.id ?? null,
+        updated_at: r.updated_at,
+        outcome: (r as Record<string, unknown>).outcome as string | null ?? null,
+      },
+    };
   });
 
 // ── Notification preferences ───────────────────────────────────────────────

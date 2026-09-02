@@ -217,6 +217,8 @@ function AuthenticatedProfile({ roles }: { roles: string[] }) {
             label="Primary Township"
             value={profile?.primary_township ?? null}
             placeholder="Not set"
+            options={TOWNSHIPS}
+            draftKey="profile:primary_township"
             onSave={(v) => save({ primary_township: v || null })}
             validate={(v) => v && !TOWNSHIPS.includes(v) ? "Select a valid township" : null}
           />

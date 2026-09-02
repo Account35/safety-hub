@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Pencil, Check, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { AreaSelect } from "@/components/area-select";
+import { readDraft, writeDraft, clearDraft } from "@/lib/ui/sticky-draft";
 
 interface Props {
   label: string;
@@ -10,9 +12,14 @@ interface Props {
   onSave: (v: string) => Promise<void>;
   validate?: (v: string) => string | null;
   inputType?: string;
+  /** When provided, the field becomes a searchable picker over these values. */
+  options?: string[];
+  /** Key used to keep in-progress input across navigation. */
+  draftKey?: string;
 }
 
-export function ProfileFieldRow({ label, value, placeholder = "Not provided", onSave, validate, inputType = "text" }: Props) {
+export function ProfileFieldRow({ label, value, placeholder = "Not provided", onSave, validate, inputType = "text", options, draftKey }: Props) {
+  const storageKey = draftKey ?? `profile-field:${label}`;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -25,12 +32,28 @@ export function ProfileFieldRow({ label, value, placeholder = "Not provided", on
     if (editing) inputRef.current?.focus();
   }, [editing]);
 
+  // Restore an in-progress edit that was interrupted by navigation.
+  useEffect(() => {
+    const saved = readDraft(storageKey);
+    if (saved !== null && saved !== (value ?? "")) {
+      setDraft(saved);
+      setEditing(true);
+    }
+  }, [storageKey, value]);
+
+  function updateDraft(next: string) {
+    setDraft(next);
+    setError(null);
+    writeDraft(storageKey, next);
+  }
+
   async function handleSave() {
     const err = validate?.(draft) ?? null;
     if (err) { setError(err); return; }
     setSaving(true);
     try {
       await onSave(draft);
+      clearDraft(storageKey);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
       setEditing(false);
@@ -43,6 +66,7 @@ export function ProfileFieldRow({ label, value, placeholder = "Not provided", on
   }
 
   function handleCancel() {
+    clearDraft(storageKey);
     setDraft(value ?? "");
     setError(null);
     setEditing(false);
@@ -58,7 +82,7 @@ export function ProfileFieldRow({ label, value, placeholder = "Not provided", on
             ref={editBtnRef}
             className="p-2.5 rounded hover:bg-muted text-muted-foreground"
             style={{ minWidth: 44, minHeight: 44 }}
-            onClick={() => { setDraft(value ?? ""); setEditing(true); }}
+            onClick={() => { setDraft(readDraft(storageKey) ?? value ?? ""); setEditing(true); }}
             aria-label={`Edit ${label}`}
           >
             {saved ? <Check className="size-4 text-green-600" /> : <Pencil className="size-4" />}
@@ -67,16 +91,26 @@ export function ProfileFieldRow({ label, value, placeholder = "Not provided", on
       </div>
       {editing ? (
         <div className="mt-1 space-y-2">
-          <Input
-            ref={inputRef}
-            type={inputType}
-            value={draft}
-            onChange={(e) => { setDraft(e.target.value); setError(null); }}
-            aria-label={label}
-            aria-invalid={!!error}
-            aria-describedby={error ? `${label}-err` : undefined}
-            className="h-10"
-          />
+          {options ? (
+            <AreaSelect
+              value={draft || null}
+              onChange={updateDraft}
+              storageKey={`${storageKey}:search`}
+              label={label}
+              options={options}
+            />
+          ) : (
+            <Input
+              ref={inputRef}
+              type={inputType}
+              value={draft}
+              onChange={(e) => updateDraft(e.target.value)}
+              aria-label={label}
+              aria-invalid={!!error}
+              aria-describedby={error ? `${label}-err` : undefined}
+              className="h-10"
+            />
+          )}
           {error && <p id={`${label}-err`} className="text-xs text-destructive" role="alert">{error}</p>}
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSave} disabled={saving} className="h-9">
